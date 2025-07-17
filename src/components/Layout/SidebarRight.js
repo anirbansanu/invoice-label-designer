@@ -10,7 +10,7 @@ const SidebarRight = ({ collapsed, onToggle }) => {
   const [activeTab, setActiveTab] = useState('properties');
 
   return (
-    <div className={`sidebar-right ${collapsed ? 'collapsed' : ''}`} style={{ width: collapsed ? '50px' : '320px' }}>
+    <div className={`sidebar-right ${collapsed ? 'collapsed' : ''}`} style={{ width: collapsed ? '50px' : '420px' }}>
       <div className="sidebar-header p-2 border-bottom">
         <div className="d-flex align-items-center justify-content-between">
           <IconButton

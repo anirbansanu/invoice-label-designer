@@ -117,8 +117,9 @@ const ElementProperties = () => {
                     placeholder="Enter text or use {{placeholders}}"
                   />
                   <Form.Text className="text-muted">
-                    Use {{variable}} for dynamic content
-                  </Form.Text>
+                    Use {"{"}{"{"} variable {"}"}{"}"} for dynamic content
+                    </Form.Text>
+
                 </Form.Group>
               </div>
 

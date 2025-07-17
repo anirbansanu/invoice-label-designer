@@ -9,7 +9,7 @@ const SidebarLeft = ({ collapsed, onToggle }) => {
   const [activeTab, setActiveTab] = useState('layers');
 
   return (
-    <div className={`sidebar-left ${collapsed ? 'collapsed' : ''}`} style={{ width: collapsed ? '50px' : '300px' }}>
+    <div className={`sidebar-left ${collapsed ? 'collapsed' : ''}`} style={{ width: collapsed ? '50px' : '400px' }}>
       <div className="sidebar-header p-2 border-bottom">
         <div className="d-flex align-items-center justify-content-between">
           <h6 className={`mb-0 ${collapsed ? 'd-none' : ''}`}>Design Tools</h6>

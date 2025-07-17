@@ -2,6 +2,7 @@
   "name": "invoice-label-designer",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://anirbansanu.github.io/invoice-label-designer",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
     "@hello-pangea/dnd": "^18.0.1",
@@ -41,7 +42,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -62,6 +65,7 @@
     ]
   },
   "devDependencies": {
-    "cross-env": "^7.0.3"
+    "cross-env": "^7.0.3",
+    "gh-pages": "^6.3.0"
   }
 }
