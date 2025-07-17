@@ -111,10 +111,44 @@ const canvasReducer = (state, action) => {
         selectedElements: action.payload
       };
 
+    case 'ADD_PAGE':
+      return {
+        ...state,
+        pages: [...state.pages, {
+          id: generateId(),
+          elements: [],
+          background: '#ffffff',
+          size: action.payload.size || { width: 794, height: 1123 },
+          grid: { size: 10, visible: true, snap: true }
+        }]
+      };
+
+    case 'DELETE_PAGE':
+      if (state.pages.length <= 1) return state;
+      const newPages = state.pages.filter((_, index) => index !== action.payload);
+      return {
+        ...state,
+        pages: newPages,
+        currentPage: Math.min(state.currentPage, newPages.length - 1)
+      };
+
+    case 'SET_CURRENT_PAGE':
+      return {
+        ...state,
+        currentPage: action.payload,
+        selectedElements: []
+      };
+
     case 'SET_ZOOM':
       return {
         ...state,
         zoom: Math.max(0.1, Math.min(5, action.payload))
+      };
+
+    case 'SET_PAN_OFFSET':
+      return {
+        ...state,
+        panOffset: action.payload
       };
 
     case 'TOGGLE_PREVIEW':
@@ -124,7 +158,25 @@ const canvasReducer = (state, action) => {
         selectedElements: []
       };
 
-    // Add other cases as needed...
+    case 'TOGGLE_GRID':
+      return {
+        ...state,
+        pages: state.pages.map((page, index) => 
+          index === state.currentPage 
+            ? { ...page, grid: { ...page.grid, visible: !page.grid.visible } }
+            : page
+        )
+      };
+
+    case 'TOGGLE_SNAP':
+      return {
+        ...state,
+        pages: state.pages.map((page, index) => 
+          index === state.currentPage 
+            ? { ...page, grid: { ...page.grid, snap: !page.grid.snap } }
+            : page
+        )
+      };
 
     default:
       return state;
@@ -133,13 +185,6 @@ const canvasReducer = (state, action) => {
 
 // Helper functions
 const generateId = () => `el_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-const getCurrentPageElements = (state) => {
-  if (!state || !state.pages || !state.pages[state.currentPage]) {
-    return [];
-  }
-  return state.pages[state.currentPage].elements || [];
-};
 
 export const CanvasProvider = ({ children }) => {
   // Add error boundary for useReducer
@@ -161,7 +206,7 @@ export const CanvasProvider = ({ children }) => {
   }
 
   // Memoized selectors with safety checks
-  const currentPage = useMemo(() => {
+  const currentPageData = useMemo(() => {
     if (!state.pages || !state.pages[state.currentPage]) {
       return state.pages?.[0] || initialState.pages[0];
     }
@@ -169,11 +214,11 @@ export const CanvasProvider = ({ children }) => {
   }, [state.pages, state.currentPage]);
 
   const selectedElementsData = useMemo(() => {
-    if (!currentPage?.elements || !state.selectedElements) {
+    if (!currentPageData?.elements || !state.selectedElements) {
       return [];
     }
-    return currentPage.elements.filter(el => state.selectedElements.includes(el.id)) || [];
-  }, [currentPage?.elements, state.selectedElements]);
+    return currentPageData.elements.filter(el => state.selectedElements.includes(el.id)) || [];
+  }, [currentPageData?.elements, state.selectedElements]);
 
   // Actions with safety checks
   const addElement = useCallback((element) => {
@@ -200,9 +245,33 @@ export const CanvasProvider = ({ children }) => {
     }
   }, [dispatch]);
 
+  const addPage = useCallback((pageConfig) => {
+    if (dispatch) {
+      dispatch({ type: 'ADD_PAGE', payload: pageConfig });
+    }
+  }, [dispatch]);
+
+  const deletePage = useCallback((index) => {
+    if (dispatch) {
+      dispatch({ type: 'DELETE_PAGE', payload: index });
+    }
+  }, [dispatch]);
+
+  const setCurrentPage = useCallback((index) => {
+    if (dispatch) {
+      dispatch({ type: 'SET_CURRENT_PAGE', payload: index });
+    }
+  }, [dispatch]);
+
   const setZoom = useCallback((zoom) => {
     if (dispatch) {
       dispatch({ type: 'SET_ZOOM', payload: zoom });
+    }
+  }, [dispatch]);
+
+  const setPanOffset = useCallback((offset) => {
+    if (dispatch) {
+      dispatch({ type: 'SET_PAN_OFFSET', payload: offset });
     }
   }, [dispatch]);
 
@@ -212,7 +281,7 @@ export const CanvasProvider = ({ children }) => {
     }
   }, [dispatch]);
 
-  // Create context value with safety checks
+  // Create context value with safety checks (FIXED: removed duplicate currentPage)
   const value = useMemo(() => ({
     // State (with fallbacks)
     pages: state.pages || initialState.pages,
@@ -221,28 +290,46 @@ export const CanvasProvider = ({ children }) => {
     zoom: state.zoom || 1,
     previewMode: state.previewMode || false,
     sampleData: state.sampleData || initialState.sampleData,
+    panOffset: state.panOffset || { x: 0, y: 0 },
+    history: state.history || [],
+    historyIndex: state.historyIndex || -1,
+    templates: state.templates || [],
+    images: state.images || [],
+    labelGrid: state.labelGrid || initialState.labelGrid,
     
-    // Computed values
-    currentPage: currentPage,
+    // Computed values (renamed to avoid duplicate key)
+    currentPageData: currentPageData,
     selectedElementsData: selectedElementsData,
+    
+    // Grid properties
+    showGrid: currentPageData?.grid?.visible || false,
+    snapToGrid: currentPageData?.grid?.snap || false,
     
     // Actions
     addElement,
     updateElement,
     deleteElements,
     selectElements,
+    addPage,
+    deletePage,
+    setCurrentPage,
     setZoom,
+    setPanOffset,
     togglePreview,
     dispatch: dispatch || (() => {})
   }), [
     state,
-    currentPage,
+    currentPageData,
     selectedElementsData,
     addElement,
     updateElement,
     deleteElements,
     selectElements,
+    addPage,
+    deletePage,
+    setCurrentPage,
     setZoom,
+    setPanOffset,
     togglePreview,
     dispatch
   ]);

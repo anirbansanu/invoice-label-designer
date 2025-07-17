@@ -1,248 +1,182 @@
 import React, { useState, useEffect } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
+// Layout Components
+import Toolbar from './Layout/Toolbar';
+import SidebarLeft from './Layout/SidebarLeft';
+import SidebarRight from './Layout/SidebarRight';
+import StatusBar from './Layout/StatusBar';
+
+// Canvas Components
+import CanvasArea from './Canvas/CanvasArea';
+import ContextMenu from './Canvas/ContextMenu';
+
+// Dialog Components
+import ExportDialog from './Dialogs/ExportDialog';
+import ImportDialog from './Dialogs/ImportDialog';
+import TableEditor from './Dialogs/TableEditor';
+import ImageUpload from './Dialogs/ImageUpload';
+import GridSettings from './Dialogs/GridSettings';
+
+// Hooks
 import { useCanvas } from '../context/CanvasContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAccessibility } from '../context/AccessibilityContext';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 const App = () => {
-  const { 
-    previewMode, 
-    currentPage, 
-    selectedElements, 
-    addElement, 
-    zoom, 
-    setZoom 
-  } = useCanvas();
-  
+  // Context hooks
+  const { previewMode } = useCanvas();
   const { theme } = useTheme();
-  const { highContrast } = useAccessibility();
+  const { highContrast, screenReader } = useAccessibility();
+  
+  // Dialog state management
+  const [dialogs, setDialogs] = useState({
+    export: false,
+    import: false,
+    tableEditor: false,
+    imageUpload: false,
+    gridSettings: false
+  });
+  
+  // Sidebar state management
+  const [sidebarState, setSidebarState] = useState({
+    leftCollapsed: false,
+    rightCollapsed: false
+  });
 
-  const [sidebarLeftCollapsed, setSidebarLeftCollapsed] = useState(false);
-  const [sidebarRightCollapsed, setSidebarRightCollapsed] = useState(false);
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts();
 
-  // Apply theme classes
+  // Apply theme classes to document body
   useEffect(() => {
-    document.body.className = `theme-${theme} ${highContrast ? 'high-contrast' : ''}`;
+    const classes = [
+      `theme-${theme}`,
+      highContrast ? 'high-contrast' : '',
+      'invoice-designer-app'
+    ].filter(Boolean).join(' ');
+    
+    document.body.className = classes;
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.className = '';
+    };
   }, [theme, highContrast]);
 
-  // Add sample elements for testing
-  const addSampleText = () => {
-    addElement({
-      type: 'text',
-      x: 100,
-      y: 100,
-      width: 200,
-      height: 30,
-      text: 'Sample Text',
-      fontSize: 16,
-      fontFamily: 'Arial',
-      fill: '#000000',
-      align: 'left'
-    });
+  // Screen reader announcements for mode changes
+  useEffect(() => {
+    if (screenReader) {
+      const announcement = document.getElementById('sr-announcement');
+      if (announcement) {
+        announcement.textContent = previewMode 
+          ? 'Switched to preview mode' 
+          : 'Switched to design mode';
+      }
+    }
+  }, [previewMode, screenReader]);
+
+  // Dialog management functions
+  const openDialog = (dialogName) => {
+    setDialogs(prev => ({ ...prev, [dialogName]: true }));
   };
 
-  const addSampleRectangle = () => {
-    addElement({
-      type: 'rectangle',
-      x: 150,
-      y: 150,
-      width: 100,
-      height: 100,
-      fill: '#ffffff',
-      stroke: '#000000',
-      strokeWidth: 1
-    });
+  const closeDialog = (dialogName) => {
+    setDialogs(prev => ({ ...prev, [dialogName]: false }));
+  };
+
+  // Sidebar management functions
+  const toggleSidebar = (side) => {
+    setSidebarState(prev => ({
+      ...prev,
+      [`${side}Collapsed`]: !prev[`${side}Collapsed`]
+    }));
   };
 
   return (
-    <div className="app-container d-flex flex-column vh-100">
-      {/* Screen reader announcements */}
-      <div id="sr-announcement" className="sr-only" aria-live="polite"></div>
-      
-      {/* Skip to content link */}
-      <a href="#main-content" className="skip-link">Skip to main content</a>
-      
-      {/* Header/Toolbar */}
-      <header className="bg-primary text-white p-3">
-        <div className="container-fluid">
-          <div className="d-flex justify-content-between align-items-center">
-            <h1 className="h4 mb-0">
-              <i className="fas fa-edit me-2"></i>
-              Invoice & Product Label Designer
-            </h1>
-            <div className="d-flex gap-2">
-              <button 
-                className="btn btn-light btn-sm"
-                onClick={addSampleText}
-              >
-                <i className="fas fa-font me-1"></i>Add Text
-              </button>
-              <button 
-                className="btn btn-light btn-sm"
-                onClick={addSampleRectangle}
-              >
-                <i className="fas fa-square me-1"></i>Add Rectangle
-              </button>
-              <button 
-                className="btn btn-outline-light btn-sm"
-                onClick={() => setZoom(zoom === 1 ? 1.5 : 1)}
-              >
-                Zoom: {Math.round(zoom * 100)}%
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-      
-      {/* Main content area */}
-      <div className="d-flex flex-grow-1 overflow-hidden">
-        {/* Left sidebar */}
-        <div 
-          className={`bg-light border-end ${sidebarLeftCollapsed ? 'd-none' : ''}`}
-          style={{ width: '250px' }}
-        >
-          <div className="p-3">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h6 className="mb-0">Layers</h6>
-              <button 
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => setSidebarLeftCollapsed(true)}
-              >
-                <i className="fas fa-times"></i>
-              </button>
-            </div>
-            
-            <div className="list-group list-group-flush">
-              {currentPage?.elements?.map((element, index) => (
-                <div 
-                  key={element.id} 
-                  className={`list-group-item list-group-item-action ${
-                    selectedElements.includes(element.id) ? 'active' : ''
-                  }`}
-                >
-                  <i className={`fas fa-${element.type === 'text' ? 'font' : 'square'} me-2`}></i>
-                  {element.type} {index + 1}
-                </div>
-              ))}
-              
-              {(!currentPage?.elements || currentPage.elements.length === 0) && (
-                <div className="text-muted p-3 text-center">
-                  <i className="fas fa-layer-group fa-2x mb-2"></i>
-                  <p>No elements yet</p>
-                  <small>Add elements using the toolbar</small>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+    <DndProvider backend={HTML5Backend}>
+      <div className="app-container d-flex flex-column vh-100">
+        {/* Accessibility Elements */}
+        <div id="sr-announcement" className="sr-only" aria-live="polite"></div>
         
-        {/* Show sidebar button when collapsed */}
-        {sidebarLeftCollapsed && (
-          <button 
-            className="btn btn-primary position-absolute"
-            style={{ top: '100px', left: '10px', zIndex: 1000 }}
-            onClick={() => setSidebarLeftCollapsed(false)}
+        {/* Skip Navigation Link */}
+        <a 
+          href="#main-content" 
+          className="skip-link position-absolute bg-primary text-white p-2 text-decoration-none"
+          style={{ top: '-40px', left: '6px', zIndex: 9999 }}
+          onFocus={(e) => e.target.style.top = '6px'}
+          onBlur={(e) => e.target.style.top = '-40px'}
+        >
+          Skip to main content
+        </a>
+        
+        {/* Application Header/Toolbar */}
+        <Toolbar 
+          onExport={() => openDialog('export')}
+          onImport={() => openDialog('import')}
+          onTableEdit={() => openDialog('tableEditor')}
+          onImageUpload={() => openDialog('imageUpload')}
+          onGridSettings={() => openDialog('gridSettings')}
+        />
+        
+        {/* Main Application Layout */}
+        <div className="d-flex flex-grow-1 overflow-hidden">
+          {/* Left Sidebar */}
+          <SidebarLeft 
+            collapsed={sidebarState.leftCollapsed}
+            onToggle={() => toggleSidebar('left')}
+          />
+          
+          {/* Main Canvas Area */}
+          <main 
+            id="main-content"
+            className="canvas-container flex-grow-1 position-relative"
+            role="main"
+            aria-label="Design canvas workspace"
+            tabIndex={0}
           >
-            <i className="fas fa-bars"></i>
-          </button>
-        )}
-        
-        {/* Canvas container */}
-        <main 
-          id="main-content"
-          className="canvas-container flex-grow-1 position-relative bg-light"
-          role="main"
-          aria-label="Canvas area"
-        >
-          <div className="h-100 d-flex align-items-center justify-content-center">
-            <div className="text-center">
-              <div className="card shadow" style={{ width: '400px' }}>
-                <div className="card-body">
-                  <i className="fas fa-paint-brush fa-4x text-primary mb-3"></i>
-                  <h3>Canvas Ready</h3>
-                  <p className="text-muted">
-                    Your invoice designer is ready! 
-                    {previewMode ? ' (Preview Mode)' : ' (Design Mode)'}
-                  </p>
-                  
-                  <div className="d-grid gap-2">
-                    <button 
-                      className="btn btn-primary"
-                      onClick={addSampleText}
-                    >
-                      <i className="fas fa-plus me-2"></i>
-                      Add Your First Element
-                    </button>
-                    
-                    <small className="text-muted">
-                      Elements: {currentPage?.elements?.length || 0} | 
-                      Zoom: {Math.round(zoom * 100)}%
-                    </small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </main>
-        
-        {/* Right sidebar */}
-        <div 
-          className={`bg-light border-start ${sidebarRightCollapsed ? 'd-none' : ''}`}
-          style={{ width: '300px' }}
-        >
-          <div className="p-3">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h6 className="mb-0">Properties</h6>
-              <button 
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => setSidebarRightCollapsed(true)}
-              >
-                <i className="fas fa-times"></i>
-              </button>
-            </div>
-            
-            {selectedElements.length > 0 ? (
-              <div className="alert alert-info">
-                <i className="fas fa-info-circle me-2"></i>
-                {selectedElements.length} element(s) selected
-              </div>
-            ) : (
-              <div className="text-muted text-center p-3">
-                <i className="fas fa-mouse-pointer fa-2x mb-2"></i>
-                <p>Select an element to edit properties</p>
-              </div>
-            )}
-          </div>
+            <CanvasArea />
+            <ContextMenu />
+          </main>
+          
+          {/* Right Sidebar */}
+          <SidebarRight 
+            collapsed={sidebarState.rightCollapsed}
+            onToggle={() => toggleSidebar('right')}
+          />
         </div>
         
-        {/* Show sidebar button when collapsed */}
-        {sidebarRightCollapsed && (
-          <button 
-            className="btn btn-primary position-absolute"
-            style={{ top: '100px', right: '10px', zIndex: 1000 }}
-            onClick={() => setSidebarRightCollapsed(false)}
-          >
-            <i className="fas fa-cog"></i>
-          </button>
-        )}
+        {/* Application Footer/Status Bar */}
+        <StatusBar />
+        
+        {/* Modal Dialogs */}
+        <ExportDialog 
+          show={dialogs.export} 
+          onHide={() => closeDialog('export')} 
+        />
+        
+        <ImportDialog 
+          show={dialogs.import} 
+          onHide={() => closeDialog('import')} 
+        />
+        
+        <TableEditor 
+          show={dialogs.tableEditor} 
+          onHide={() => closeDialog('tableEditor')} 
+        />
+        
+        <ImageUpload 
+          show={dialogs.imageUpload} 
+          onHide={() => closeDialog('imageUpload')} 
+        />
+        
+        <GridSettings 
+          show={dialogs.gridSettings} 
+          onHide={() => closeDialog('gridSettings')} 
+        />
       </div>
-      
-      {/* Status bar */}
-      <footer className="bg-dark text-white p-2">
-        <div className="container-fluid">
-          <div className="d-flex justify-content-between align-items-center">
-            <small>
-              <i className="fas fa-info-circle me-1"></i>
-              Ready | Page {currentPage + 1} | Elements: {currentPage?.elements?.length || 0}
-            </small>
-            <small>
-              Mode: {previewMode ? 'Preview' : 'Design'} | 
-              Theme: {theme} | 
-              Status: Active
-            </small>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </DndProvider>
   );
 };
 
