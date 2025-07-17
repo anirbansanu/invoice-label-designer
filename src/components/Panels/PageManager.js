@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Card, Button, Form, Row, Col, Badge, Dropdown } from 'react-bootstrap';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+
 import { useCanvas } from '../../context/CanvasContext';
 
 const PageManager = () => {

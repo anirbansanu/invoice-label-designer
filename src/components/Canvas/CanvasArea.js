@@ -2,6 +2,7 @@ import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { Stage, Layer, Rect } from 'react-konva';
 import { FixedSizeList as List } from 'react-window';
 
+
 // Components
 import GridOverlay from './GridOverlay';
 import SelectionBox from './SelectionBox';
@@ -24,6 +25,8 @@ import { useAccessibility } from '../../context/AccessibilityContext';
 
 // Utils
 import { performanceOptimizer } from '../../utils/performanceOptimizer';
+
+const { zoom, setZoom } = useCanvas();
 
 const CanvasArea = () => {
   const {

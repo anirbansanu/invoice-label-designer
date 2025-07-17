@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
+    "@hello-pangea/dnd": "^18.0.1",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -19,6 +20,7 @@
     "jszip": "^3.10.1",
     "konva": "^9.3.22",
     "lodash": "^4.17.21",
+    "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.0",
     "react-bootstrap": "^2.10.10",
@@ -58,5 +60,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }
