@@ -297,15 +297,15 @@ const CanvasArea = () => {
       </div>
       
       {/* Canvas overlay for UI elements */}
-      <div className="canvas-overlay position-absolute top-0 end-0 p-3">
-        <div className="bg-white rounded shadow-sm p-2">
-          <small className="text-muted d-block">Elements: {currentPageData.elements?.length || 0}</small>
-          <small className="text-muted d-block">Selected: {selectedElements.length}</small>
+      {/* <div className="canvas-overlay position-absolute top-0 end-0 p-3"> */}
+        {/* <div className="bg-white rounded shadow-sm p-2">
+         
+        
           <small className="text-muted d-block">Zoom: {Math.round(zoom * 100)}%</small>
-        </div>
+        </div> */}
         
         {/* Zoom controls */}
-        <div className="zoom-controls mt-2">
+        {/* <div className="zoom-controls mt-2">
           <div className="btn-group-vertical">
             <button 
               className="btn btn-sm btn-outline-secondary"
@@ -321,9 +321,9 @@ const CanvasArea = () => {
             >
               <i className="fas fa-minus"></i>
             </button>
-          </div>
-        </div>
-      </div>
+          </div> */}
+        {/* </div> */}
+      {/* </div> */}
     </div>
   );
 };

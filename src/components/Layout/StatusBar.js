@@ -9,7 +9,9 @@ const StatusBar = () => {
     zoom, 
     previewMode,
     history,
-    historyIndex 
+    historyIndex ,
+    currentPageData,
+    setZoom
   } = useCanvas();
 
   const getSelectionText = () => {
@@ -34,6 +36,14 @@ const StatusBar = () => {
     return `${historyIndex + 1}/${history.length}`;
   };
 
+  const getElementCountText = () => {
+    return `Elements: ${currentPageData?.elements?.length || 0}`;
+  }
+
+  const getSelected = () => {
+    return  `Selected: ${selectedElements.length || 0}`;     
+  }
+
   return (
     <div className="status-bar bg-light border-top px-3 py-2">
       <div className="d-flex align-items-center justify-content-between">
@@ -51,6 +61,16 @@ const StatusBar = () => {
           <div className="status-item">
             <i className="fas fa-file-alt me-1"></i>
             <span className="text-muted">{getPageText()}</span>
+          </div>
+
+          <div className="status-item">
+            <i className="fas fa-file-alt me-1"></i>
+            <span className="text-muted">{getSelected()}</span>
+          </div>
+
+          <div className="status-item">
+            <i className="fas fa-file-alt me-1"></i>
+            <span className="text-muted">{getElementCountText()}</span>
           </div>
         </div>
         

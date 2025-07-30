@@ -10,11 +10,10 @@ const LayerManager = () => {
     selectElements, 
     updateElement, 
     deleteElements,
-    dispatch 
+    dispatch,
+    currentPageData 
   } = useCanvas();
-
-  const elements = currentPage?.elements || [];
-
+  const elements = currentPageData?.elements || [];
   const handleElementSelect = (elementId, multiSelect = false) => {
     if (multiSelect) {
       const newSelection = selectedElements.includes(elementId)
