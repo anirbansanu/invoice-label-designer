@@ -9,7 +9,7 @@ const QRCodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pr
   const groupRef = useRef();
   const transformerRef = useRef();
   const [qrImage, setQrImage] = useState(null);
-
+  const imageRef = useRef();
   useEffect(() => {
     if (isSelected && transformerRef.current && groupRef.current) {
       transformerRef.current.nodes([groupRef.current]);
@@ -65,15 +65,15 @@ const QRCodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pr
   };
 
   const handleTransformEnd = () => {
-    const node = groupRef.current;
+    const node = imageRef.current;
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
     const size = Math.max(20, Math.min(node.width() * scaleX, node.height() * scaleY));
 
     onChange({
       ...element,
-      x: node.x(),
-      y: node.y(),
+      // x: node.x(),
+      // y: node.y(),
       size: size,
       rotation: node.rotation()
     });
@@ -99,6 +99,7 @@ const QRCodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pr
       >
         {qrImage && (
           <Image
+            ref={imageRef}
             image={qrImage}
             width={element.size}
             height={element.size}
