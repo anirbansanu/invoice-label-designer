@@ -6,21 +6,23 @@ import JsBarcode from 'jsbarcode';
 
 const BarcodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, previewMode }) => {
   const { sampleData } = useCanvas();
-  const groupRef = useRef();
+  const imageRef = useRef();
   const transformerRef = useRef();
   const [barcodeImage, setBarcodeImage] = useState(null);
 
+  // Apply transformer to the image when selected
   useEffect(() => {
-    if (isSelected && transformerRef.current && groupRef.current) {
-      transformerRef.current.nodes([groupRef.current]);
+    if (isSelected && transformerRef.current && imageRef.current) {
+      transformerRef.current.nodes([imageRef.current]);
       transformerRef.current.getLayer().batchDraw();
     }
   }, [isSelected]);
 
+  // Generate barcode image
   useEffect(() => {
     const canvas = document.createElement('canvas');
     const barcodeValue = parsePlaceholders(element.value || '', sampleData) || 'SAMPLE123';
-    
+
     try {
       JsBarcode(canvas, barcodeValue, {
         format: element.format || 'CODE128',
@@ -40,7 +42,6 @@ const BarcodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, p
       image.src = canvas.toDataURL();
     } catch (error) {
       console.error('Error generating barcode:', error);
-      // Create error placeholder
       const errorCanvas = document.createElement('canvas');
       errorCanvas.width = element.width || 200;
       errorCanvas.height = element.height || 50;
@@ -51,7 +52,7 @@ const BarcodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, p
       ctx.font = '12px Arial';
       ctx.textAlign = 'center';
       ctx.fillText('Invalid Barcode', errorCanvas.width / 2, errorCanvas.height / 2);
-      
+
       const errorImage = new window.Image();
       errorImage.onload = () => setBarcodeImage(errorImage);
       errorImage.src = errorCanvas.toDataURL();
@@ -59,7 +60,9 @@ const BarcodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, p
   }, [element.value, element.format, sampleData, element.width, element.height]);
 
   const handleDragEnd = (e) => {
-    const newPos = snapToGrid ? snapToGrid(e.target.x(), e.target.y()) : { x: e.target.x(), y: e.target.y() };
+    const newPos = snapToGrid
+      ? snapToGrid(e.target.x(), e.target.y())
+      : { x: e.target.x(), y: e.target.y() };
     onChange({
       ...element,
       x: newPos.x,
@@ -68,14 +71,12 @@ const BarcodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, p
   };
 
   const handleTransformEnd = () => {
-    const node = groupRef.current;
+    const node = imageRef.current;
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
 
     onChange({
       ...element,
-      x: node.x(),
-      y: node.y(),
       width: Math.max(50, node.width() * scaleX),
       height: Math.max(20, node.height() * scaleY),
       rotation: node.rotation()
@@ -88,23 +89,24 @@ const BarcodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, p
   return (
     <>
       <Group
-        ref={groupRef}
-        x={element.x}
-        y={element.y}
+      
         rotation={element.rotation}
         opacity={element.opacity}
         visible={element.visible}
-        draggable={!previewMode && !element.locked}
-        onClick={onSelect}
-        onTap={onSelect}
-        onDragEnd={handleDragEnd}
-        onTransformEnd={handleTransformEnd}
       >
         {barcodeImage && (
           <Image
+            ref={imageRef}
             image={barcodeImage}
+            x={element.x}
+            y={element.y}
             width={element.width}
             height={element.height}
+            draggable={!previewMode && !element.locked}
+            onClick={onSelect}
+            onTap={onSelect}
+            onDragEnd={handleDragEnd}
+            onTransformEnd={handleTransformEnd}
           />
         )}
       </Group>

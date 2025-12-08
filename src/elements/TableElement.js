@@ -7,10 +7,11 @@ const TableElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
   const { sampleData } = useCanvas();
   const groupRef = useRef();
   const transformerRef = useRef();
+  const rectRef = useRef(); // <-- Add this
 
   useEffect(() => {
-    if (isSelected && transformerRef.current && groupRef.current) {
-      transformerRef.current.nodes([groupRef.current]);
+    if (isSelected && transformerRef.current && rectRef.current) {
+      transformerRef.current.nodes([rectRef.current]);
       transformerRef.current.getLayer().batchDraw();
     }
   }, [isSelected]);
@@ -25,7 +26,7 @@ const TableElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
   };
 
   const handleTransformEnd = () => {
-    const node = groupRef.current;
+    const node = rectRef.current;
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
 
@@ -55,6 +56,7 @@ const TableElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
     content.push(
       <Rect
         key="header-bg"
+        ref={rectRef}
         x={0}
         y={currentY}
         width={element.width}
@@ -158,7 +160,7 @@ const TableElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
   return (
     <>
       <Group
-        ref={groupRef}
+        ref={rectRef}
         x={element.x}
         y={element.y}
         rotation={element.rotation}
