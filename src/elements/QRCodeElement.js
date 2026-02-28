@@ -65,10 +65,10 @@ const QRCodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pr
   };
 
   const handleTransformEnd = () => {
-    const node = imageRef.current;
+    const node = groupRef.current;
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
-    const size = Math.max(20, Math.min(node.width() * scaleX, node.height() * scaleY));
+    const size = Math.max(20, (element.size || 100) * Math.min(scaleX, scaleY));
 
     onChange({
       ...element,
@@ -109,6 +109,7 @@ const QRCodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pr
       {isSelected && !previewMode && (
         <Transformer
           ref={transformerRef}
+          keepRatio={true}
           boundBoxFunc={(oldBox, newBox) => {
             const size = Math.min(newBox.width, newBox.height);
             if (size < 20) {

@@ -325,9 +325,9 @@
 }
 
 .template-list {
-  max-height: calc(100vh - 250px);
-  overflow-y: auto;
-  padding-right: 4px;
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
 }
 
 .template-chip-row {

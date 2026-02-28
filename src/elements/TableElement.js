@@ -3,6 +3,21 @@ import { Group, Rect, Text, Line, Transformer } from 'react-konva';
 import { useCanvas } from '../context/CanvasContext';
 import { parsePlaceholders } from '../utils/placeholderParser';
 
+const normalizeColumnsToWidth = (columns, totalWidth) => {
+  if (!Array.isArray(columns) || columns.length === 0) return [];
+
+  const safeTotalWidth = Math.max(100, totalWidth || 100);
+  const sourceTotal = columns.reduce((sum, column) => sum + (column.width || 0), 0);
+
+  if (sourceTotal <= 0) {
+    const equalWidth = safeTotalWidth / columns.length;
+    return columns.map(column => ({ ...column, width: equalWidth }));
+  }
+
+  const scale = safeTotalWidth / sourceTotal;
+  return columns.map(column => ({ ...column, width: Math.max(20, (column.width || 0) * scale) }));
+};
+
 const TableElement = ({ element, isSelected, onSelect, onChange, snapToGrid, previewMode }) => {
   const { sampleData } = useCanvas();
   const groupRef = useRef();
@@ -29,12 +44,19 @@ const TableElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
 
+    const baseWidth = Math.max(100, element.width || 100);
+    const baseHeight = Math.max(50, element.height || 50);
+    const nextWidth = Math.max(100, baseWidth * scaleX);
+    const nextHeight = Math.max(50, baseHeight * scaleY);
+    const resizedColumns = normalizeColumnsToWidth(element.columns || [], nextWidth);
+
     onChange({
       ...element,
       x: node.x(),
       y: node.y(),
-      width: Math.max(100, node.width() * scaleX),
-      height: Math.max(50, node.height() * scaleY),
+      width: nextWidth,
+      height: nextHeight,
+      columns: resizedColumns,
       rotation: node.rotation()
     });
 
@@ -44,12 +66,32 @@ const TableElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
 
   const renderTableContent = () => {
     const content = [];
-    const cellHeight = 30;
-    const headerHeight = 35;
-    const columns = element.columns || [];
+    const columns = normalizeColumnsToWidth(element.columns || [], element.width || 100);
     const rows = element.rows || [];
 
+    const baseHeaderHeight = 35;
+    const baseCellHeight = 30;
+    const baseTotalHeight = baseHeaderHeight + (Math.max(1, rows.length) * baseCellHeight);
+    const verticalScale = Math.max(0.5, (element.height || baseTotalHeight) / baseTotalHeight);
+
+    const headerHeight = Math.max(20, baseHeaderHeight * verticalScale);
+    const cellHeight = Math.max(18, baseCellHeight * verticalScale);
+
     let currentY = 0;
+
+    // Explicit logical bounds so transformer always matches full table area
+    content.push(
+      <Rect
+        key="table-bounds"
+        x={0}
+        y={0}
+        width={Math.max(100, element.width || 100)}
+        height={Math.max(50, element.height || 50)}
+        fill="rgba(0,0,0,0.001)"
+        strokeEnabled={false}
+        listening={false}
+      />
+    );
 
     // Header row
     content.push(
@@ -71,15 +113,17 @@ const TableElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
         <Text
           key={`header-${colIndex}`}
           x={currentX + 5}
-          y={currentY + 8}
-          width={column.width - 10}
-          height={headerHeight - 16}
+          y={currentY + Math.max(4, headerHeight * 0.22)}
+          width={Math.max(10, column.width - 10)}
+          height={Math.max(10, headerHeight - 8)}
           text={column.header}
-          fontSize={14}
+          fontSize={Math.max(10, 14 * verticalScale)}
           fontFamily="Arial"
           fill="#000000"
           align="left"
           verticalAlign="middle"
+          wrap="none"
+          ellipsis={true}
         />
       );
 
@@ -122,15 +166,17 @@ const TableElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
             <Text
               key={`cell-${rowIndex}-${colIndex}`}
               x={currentX + 5}
-              y={currentY + 6}
-              width={columns[colIndex].width - 10}
-              height={cellHeight - 12}
+              y={currentY + Math.max(3, cellHeight * 0.18)}
+              width={Math.max(10, columns[colIndex].width - 10)}
+              height={Math.max(8, cellHeight - 6)}
               text={displayText}
-              fontSize={12}
+              fontSize={Math.max(9, 12 * verticalScale)}
               fontFamily="Arial"
               fill="#000000"
               align="left"
               verticalAlign="middle"
+              wrap="none"
+              ellipsis={true}
             />
           );
 
@@ -161,6 +207,10 @@ const TableElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
         ref={groupRef}
         x={element.x}
         y={element.y}
+        clipX={0}
+        clipY={0}
+        clipWidth={Math.max(100, element.width || 100)}
+        clipHeight={Math.max(50, element.height || 50)}
         rotation={element.rotation}
         opacity={element.opacity}
         visible={element.visible}

@@ -39,6 +39,25 @@ const ShapeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
 
+    if (element.type === 'circle') {
+      const baseRadius = element.radius || Math.min(element.width || 0, element.height || 0) / 2 || 25;
+      const nextRadius = Math.max(5, baseRadius * Math.min(scaleX, scaleY));
+
+      onChange({
+        ...element,
+        x: node.x(),
+        y: node.y(),
+        radius: nextRadius,
+        width: nextRadius * 2,
+        height: nextRadius * 2,
+        rotation: node.rotation()
+      });
+
+      node.scaleX(1);
+      node.scaleY(1);
+      return;
+    }
+
     onChange({
       ...element,
       x: node.x(),

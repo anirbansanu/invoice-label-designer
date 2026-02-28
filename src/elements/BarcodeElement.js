@@ -7,16 +7,17 @@ import JsBarcode from 'jsbarcode';
 const BarcodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, previewMode }) => {
   const { sampleData } = useCanvas();
   const groupRef = useRef();
+  const imageRef = useRef();
   const transformerRef = useRef();
   const [barcodeImage, setBarcodeImage] = useState(null);
 
-  // Apply transformer to the group when selected
+  // Apply transformer to the barcode image when selected
   useEffect(() => {
-    if (isSelected && transformerRef.current && groupRef.current) {
-      transformerRef.current.nodes([groupRef.current]);
+    if (isSelected && transformerRef.current && imageRef.current) {
+      transformerRef.current.nodes([imageRef.current]);
       transformerRef.current.getLayer().batchDraw();
     }
-  }, [isSelected]);
+  }, [isSelected, element.width, element.height, barcodeImage]);
 
   // Generate barcode image
   useEffect(() => {
@@ -71,17 +72,17 @@ const BarcodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, p
   };
 
   const handleTransformEnd = () => {
-    const node = groupRef.current;
+    const node = imageRef.current;
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
 
     onChange({
       ...element,
-      x: node.x(),
-      y: node.y(),
+      x: groupRef.current?.x() ?? element.x,
+      y: groupRef.current?.y() ?? element.y,
       width: Math.max(50, (element.width || 200) * scaleX),
       height: Math.max(20, (element.height || 50) * scaleY),
-      rotation: node.rotation()
+      rotation: groupRef.current?.rotation() ?? element.rotation
     });
 
     node.scaleX(1);
@@ -105,6 +106,7 @@ const BarcodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, p
       >
         {barcodeImage && (
           <Image
+            ref={imageRef}
             image={barcodeImage}
             width={element.width}
             height={element.height}
