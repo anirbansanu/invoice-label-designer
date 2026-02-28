@@ -11,13 +11,16 @@ export const useKeyboardShortcuts = () => {
     redo,
     groupElements,
     ungroupElements,
+    selectElements,
+    setZoom,
+    zoom,
     dispatch
   } = useCanvas();
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Don't trigger shortcuts when typing in inputs
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
         return;
       }
 
@@ -35,42 +38,42 @@ export const useKeyboardShortcuts = () => {
 
         case 'z':
           if (isCtrl && !isShift) {
-            undo();
+            undo?.();
             e.preventDefault();
           }
           break;
 
         case 'y':
           if (isCtrl) {
-            redo();
+            redo?.();
             e.preventDefault();
           }
           break;
 
         case 'Z':
           if (isCtrl && isShift) {
-            redo();
+            redo?.();
             e.preventDefault();
           }
           break;
 
         case 'c':
           if (isCtrl && selectedElements.length > 0) {
-            copyElements(selectedElements);
+            copyElements?.(selectedElements);
             e.preventDefault();
           }
           break;
 
         case 'v':
           if (isCtrl) {
-            pasteElements();
+            pasteElements?.();
             e.preventDefault();
           }
           break;
 
         case 'x':
           if (isCtrl && selectedElements.length > 0) {
-            copyElements(selectedElements);
+            copyElements?.(selectedElements);
             deleteElements(selectedElements);
             e.preventDefault();
           }
@@ -85,28 +88,27 @@ export const useKeyboardShortcuts = () => {
 
         case 'g':
           if (isCtrl && selectedElements.length > 1) {
-            groupElements(selectedElements);
+            groupElements?.(selectedElements);
             e.preventDefault();
           }
           break;
 
         case 'u':
           if (isCtrl && selectedElements.length > 0) {
-            ungroupElements(selectedElements);
+            ungroupElements?.(selectedElements);
             e.preventDefault();
           }
           break;
 
         case 'd':
           if (isCtrl && selectedElements.length > 0) {
-            copyElements(selectedElements);
-            setTimeout(() => pasteElements(), 10);
+            dispatch({ type: 'DUPLICATE_ELEMENTS', payload: selectedElements });
             e.preventDefault();
           }
           break;
 
         case 'Escape':
-          dispatch({ type: 'CLEAR_SELECTION' });
+          selectElements([]);
           break;
 
         case 'ArrowUp':
@@ -140,21 +142,21 @@ export const useKeyboardShortcuts = () => {
         case '+':
         case '=':
           if (isCtrl) {
-            dispatch({ type: 'ZOOM_IN' });
+            setZoom(Math.min(5, (zoom || 1) * 1.2));
             e.preventDefault();
           }
           break;
 
         case '-':
           if (isCtrl) {
-            dispatch({ type: 'ZOOM_OUT' });
+            setZoom(Math.max(0.1, (zoom || 1) / 1.2));
             e.preventDefault();
           }
           break;
 
         case '0':
           if (isCtrl) {
-            dispatch({ type: 'RESET_ZOOM' });
+            setZoom(1);
             e.preventDefault();
           }
           break;
@@ -175,5 +177,5 @@ export const useKeyboardShortcuts = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedElements, deleteElements, copyElements, pasteElements, undo, redo, groupElements, ungroupElements, dispatch]);
+  }, [selectedElements, deleteElements, copyElements, pasteElements, undo, redo, groupElements, ungroupElements, selectElements, setZoom, zoom, dispatch]);
 };

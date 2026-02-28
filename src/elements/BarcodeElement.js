@@ -6,14 +6,14 @@ import JsBarcode from 'jsbarcode';
 
 const BarcodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, previewMode }) => {
   const { sampleData } = useCanvas();
-  const imageRef = useRef();
+  const groupRef = useRef();
   const transformerRef = useRef();
   const [barcodeImage, setBarcodeImage] = useState(null);
 
-  // Apply transformer to the image when selected
+  // Apply transformer to the group when selected
   useEffect(() => {
-    if (isSelected && transformerRef.current && imageRef.current) {
-      transformerRef.current.nodes([imageRef.current]);
+    if (isSelected && transformerRef.current && groupRef.current) {
+      transformerRef.current.nodes([groupRef.current]);
       transformerRef.current.getLayer().batchDraw();
     }
   }, [isSelected]);
@@ -71,14 +71,16 @@ const BarcodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, p
   };
 
   const handleTransformEnd = () => {
-    const node = imageRef.current;
+    const node = groupRef.current;
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
 
     onChange({
       ...element,
-      width: Math.max(50, node.width() * scaleX),
-      height: Math.max(20, node.height() * scaleY),
+      x: node.x(),
+      y: node.y(),
+      width: Math.max(50, (element.width || 200) * scaleX),
+      height: Math.max(20, (element.height || 50) * scaleY),
       rotation: node.rotation()
     });
 
@@ -89,24 +91,23 @@ const BarcodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, p
   return (
     <>
       <Group
-      
+        ref={groupRef}
+        x={element.x}
+        y={element.y}
         rotation={element.rotation}
         opacity={element.opacity}
         visible={element.visible}
+        draggable={!previewMode && !element.locked}
+        onClick={onSelect}
+        onTap={onSelect}
+        onDragEnd={handleDragEnd}
+        onTransformEnd={handleTransformEnd}
       >
         {barcodeImage && (
           <Image
-            ref={imageRef}
             image={barcodeImage}
-            x={element.x}
-            y={element.y}
             width={element.width}
             height={element.height}
-            draggable={!previewMode && !element.locked}
-            onClick={onSelect}
-            onTap={onSelect}
-            onDragEnd={handleDragEnd}
-            onTransformEnd={handleTransformEnd}
           />
         )}
       </Group>

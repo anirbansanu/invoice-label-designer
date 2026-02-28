@@ -38,7 +38,7 @@ const SidebarLeft = ({ collapsed, onToggle }) => {
               <PageManager />
             </Tab>
             
-            <Tab eventKey="templates" title={<><i className="fas fa-templates me-1"></i> Templates</>}>
+            <Tab eventKey="templates" title={<><i className="fas fa-th-large me-1"></i> Templates</>}>
               <TemplateLibrary />
             </Tab>
           </Tabs>

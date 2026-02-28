@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useCanvas } from './useCanvas';
 
 export const useClipboard = () => {
-  const { selectedElements, selectedElementsData, copyElements, pasteElements } = useCanvas();
+  const { selectedElements, selectedElementsData, copyElements, pasteElements, deleteElements } = useCanvas();
 
   const copy = useCallback(() => {
     if (selectedElements.length > 0) {
@@ -19,14 +19,11 @@ export const useClipboard = () => {
   const cut = useCallback(() => {
     if (selectedElements.length > 0) {
       copyElements(selectedElements);
-      // Delete selected elements after copying
-      selectedElements.forEach(id => {
-        // Implementation would depend on your delete function
-      });
+      deleteElements(selectedElements);
       return true;
     }
     return false;
-  }, [selectedElements, copyElements]);
+  }, [selectedElements, copyElements, deleteElements]);
 
   return {
     copy,

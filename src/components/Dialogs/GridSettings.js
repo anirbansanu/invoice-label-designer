@@ -5,14 +5,14 @@ import NumberInput from '../Common/NumberInput';
 import ColorPicker from '../Common/ColorPicker';
 
 const GridSettings = ({ show, onHide }) => {
-  const { currentPage, dispatch } = useCanvas();
+  const { currentPage, currentPageData, dispatch } = useCanvas();
   const [gridSettings, setGridSettings] = useState({
-    size: currentPage?.grid?.size || 10,
-    visible: currentPage?.grid?.visible || true,
-    snap: currentPage?.grid?.snap || true,
-    color: currentPage?.grid?.color || '#e0e0e0',
-    style: currentPage?.grid?.style || 'dot', // 'dot', 'line', 'cross'
-    opacity: currentPage?.grid?.opacity || 0.5
+    size: currentPageData?.grid?.size || 10,
+    visible: currentPageData?.grid?.visible ?? true,
+    snap: currentPageData?.grid?.snap ?? true,
+    color: currentPageData?.grid?.color || '#e0e0e0',
+    style: currentPageData?.grid?.style || 'dot', // 'dot', 'line', 'cross'
+    opacity: currentPageData?.grid?.opacity || 0.5
   });
 
   const handleSettingChange = (key, value) => {

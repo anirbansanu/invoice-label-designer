@@ -72,8 +72,8 @@ const QRCodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pr
 
     onChange({
       ...element,
-      // x: node.x(),
-      // y: node.y(),
+      x: node.x(),
+      y: node.y(),
       size: size,
       rotation: node.rotation()
     });

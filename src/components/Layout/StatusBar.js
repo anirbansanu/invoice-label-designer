@@ -9,9 +9,8 @@ const StatusBar = () => {
     zoom, 
     previewMode,
     history,
-    historyIndex ,
-    currentPageData,
-    setZoom
+    historyIndex,
+    currentPageData
   } = useCanvas();
 
   const getSelectionText = () => {

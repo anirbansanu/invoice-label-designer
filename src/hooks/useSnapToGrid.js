@@ -2,36 +2,36 @@ import { useCallback } from 'react';
 import { useCanvas } from './useCanvas';
 
 export const useSnapToGrid = () => {
-  const { currentPage } = useCanvas();
+  const { currentPageData } = useCanvas();
 
   const snapToGrid = useCallback((x, y) => {
-    if (!currentPage?.grid?.snap) return { x, y };
+    if (!currentPageData?.grid?.snap) return { x, y };
     
-    const gridSize = currentPage.grid.size || 10;
+    const gridSize = currentPageData.grid.size || 10;
     
     return {
       x: Math.round(x / gridSize) * gridSize,
       y: Math.round(y / gridSize) * gridSize
     };
-  }, [currentPage?.grid]);
+  }, [currentPageData?.grid]);
 
   const snapValue = useCallback((value) => {
-    if (!currentPage?.grid?.snap) return value;
+    if (!currentPageData?.grid?.snap) return value;
     
-    const gridSize = currentPage.grid.size || 10;
+    const gridSize = currentPageData.grid.size || 10;
     return Math.round(value / gridSize) * gridSize;
-  }, [currentPage?.grid]);
+  }, [currentPageData?.grid]);
 
   const snapSize = useCallback((width, height) => {
-    if (!currentPage?.grid?.snap) return { width, height };
+    if (!currentPageData?.grid?.snap) return { width, height };
     
-    const gridSize = currentPage.grid.size || 10;
+    const gridSize = currentPageData.grid.size || 10;
     
     return {
       width: Math.round(width / gridSize) * gridSize,
       height: Math.round(height / gridSize) * gridSize
     };
-  }, [currentPage?.grid]);
+  }, [currentPageData?.grid]);
 
-  return currentPage?.grid?.snap ? snapToGrid : null;
+  return currentPageData?.grid?.snap ? snapToGrid : null;
 };

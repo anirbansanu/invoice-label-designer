@@ -17,22 +17,26 @@ export const AccessibilityProvider = ({ children }) => {
     const mediaQueries = {
       highContrast: window.matchMedia('(prefers-contrast: high)'),
       motionReduced: window.matchMedia('(prefers-reduced-motion: reduce)'),
-      largeText: window.matchMedia('(prefers-reduced-motion: reduce)')
+      largeText: window.matchMedia('(min-resolution: 120dpi)')
     };
+
+    const handlers = {};
 
     Object.entries(mediaQueries).forEach(([key, mq]) => {
       if (mq.matches) {
         setSettings(prev => ({ ...prev, [key]: true }));
       }
       
-      mq.addEventListener('change', (e) => {
+      const handler = (e) => {
         setSettings(prev => ({ ...prev, [key]: e.matches }));
-      });
+      };
+      handlers[key] = handler;
+      mq.addEventListener('change', handler);
     });
 
     return () => {
-      Object.values(mediaQueries).forEach(mq => {
-        mq.removeEventListener('change', () => {});
+      Object.entries(mediaQueries).forEach(([key, mq]) => {
+        mq.removeEventListener('change', handlers[key]);
       });
     };
   }, []);

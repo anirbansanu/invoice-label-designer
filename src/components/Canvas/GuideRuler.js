@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useCanvas } from '../../context/CanvasContext';
 
 const GuideRuler = () => {
-  const { currentPage, zoom, dispatch } = useCanvas();
+  const { currentPageData, zoom } = useCanvas();
   const [horizontalGuides, setHorizontalGuides] = useState([]);
   const [verticalGuides, setVerticalGuides] = useState([]);
   const [showRulers, setShowRulers] = useState(true);
@@ -78,7 +78,7 @@ const GuideRuler = () => {
     return marks;
   }, [zoom]);
 
-  if (!showRulers || !currentPage) return null;
+  if (!showRulers || !currentPageData) return null;
 
   return (
     <div className="guide-ruler-container">
@@ -89,7 +89,7 @@ const GuideRuler = () => {
           position: 'absolute',
           top: '0',
           left: '20px',
-          width: `${currentPage.size.width * zoom}px`,
+          width: `${currentPageData.size.width * zoom}px`,
           height: '20px',
           backgroundColor: '#f5f5f5',
           borderBottom: '1px solid #ddd',
@@ -101,7 +101,7 @@ const GuideRuler = () => {
           addVerticalGuide(x);
         }}
       >
-        {generateRulerMarks(currentPage.size.width, true)}
+        {generateRulerMarks(currentPageData.size.width, true)}
       </div>
 
       {/* Vertical Ruler */}
@@ -112,7 +112,7 @@ const GuideRuler = () => {
           top: '20px',
           left: '0',
           width: '20px',
-          height: `${currentPage.size.height * zoom}px`,
+          height: `${currentPageData.size.height * zoom}px`,
           backgroundColor: '#f5f5f5',
           borderRight: '1px solid #ddd',
           zIndex: 10
@@ -123,7 +123,7 @@ const GuideRuler = () => {
           addHorizontalGuide(y);
         }}
       >
-        {generateRulerMarks(currentPage.size.height, false)}
+        {generateRulerMarks(currentPageData.size.height, false)}
       </div>
 
       {/* Corner */}
@@ -154,7 +154,7 @@ const GuideRuler = () => {
             position: 'absolute',
             top: `${guide.position * zoom + 20}px`,
             left: '20px',
-            width: `${currentPage.size.width * zoom}px`,
+            width: `${currentPageData.size.width * zoom}px`,
             height: '1px',
             backgroundColor: '#0066cc',
             cursor: 'ns-resize',
@@ -174,7 +174,7 @@ const GuideRuler = () => {
             top: '20px',
             left: `${guide.position * zoom + 20}px`,
             width: '1px',
-            height: `${currentPage.size.height * zoom}px`,
+            height: `${currentPageData.size.height * zoom}px`,
             backgroundColor: '#0066cc',
             cursor: 'ew-resize',
             zIndex: 5

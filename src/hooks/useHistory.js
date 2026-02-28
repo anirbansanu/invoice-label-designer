@@ -4,8 +4,8 @@ import { useCanvas } from './useCanvas';
 export const useHistory = () => {
   const { history, historyIndex, undo, redo, dispatch } = useCanvas();
 
-  const saveState = useCallback((state) => {
-    dispatch({ type: 'SAVE_HISTORY', payload: state });
+  const saveState = useCallback(() => {
+    dispatch({ type: 'SAVE_HISTORY' });
   }, [dispatch]);
 
   const canUndo = historyIndex > 0;

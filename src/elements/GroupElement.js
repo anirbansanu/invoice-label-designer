@@ -114,7 +114,7 @@ const GroupElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
         onDragEnd={handleDragEnd}
         onTransformEnd={handleTransformEnd}
       >
-        {element.children.map(renderChild)}
+        {(element.children || []).map(renderChild)}
       </Group>
       {isSelected && !previewMode && (
         <Transformer

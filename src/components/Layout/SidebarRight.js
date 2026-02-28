@@ -6,7 +6,7 @@ import IconButton from '../Common/IconButton';
 import { useCanvas } from '../../context/CanvasContext';
 
 const SidebarRight = ({ collapsed, onToggle }) => {
-  const { selectedElements } = useCanvas();
+  const { selectedElements, addElement: contextAddElement } = useCanvas();
   const [activeTab, setActiveTab] = useState('properties');
 
    const addElement = (type) => {
@@ -75,10 +75,9 @@ const SidebarRight = ({ collapsed, onToggle }) => {
       }
     };
 
-    // dispatch({
-    //   type: 'ADD_ELEMENT',
-    //   payload: elementDefaults[type]
-    // });
+    if (elementDefaults[type]) {
+      contextAddElement(elementDefaults[type]);
+    }
   };
 
 

@@ -14,7 +14,6 @@ const ContextMenu = () => {
   } = useCanvas();
   
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
-  const [targetElement, setTargetElement] = useState(null);
 
   useEffect(() => {
     const handleContextMenu = (e) => {

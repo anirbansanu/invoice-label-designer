@@ -1,6 +1,5 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { Stage, Layer, Rect } from 'react-konva';
-import { FixedSizeList as List } from 'react-window';
 
 // Components
 import GridOverlay from './GridOverlay';
@@ -33,9 +32,7 @@ const CanvasArea = () => {
     selectElements,
     updateElement,
     zoom,
-    setZoom, // Now properly inside the component
     panOffset,
-    setPanOffset,
     previewMode,
     labelGrid,
     virtualScrolling
@@ -212,6 +209,7 @@ const CanvasArea = () => {
     }
     
     return grids;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [labelGrid, currentPageData?.size]);
 
   // Early return if no current page data

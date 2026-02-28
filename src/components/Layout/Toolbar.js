@@ -13,7 +13,6 @@ const Toolbar = ({
   const { 
     zoom, 
     setZoom, 
-    currentPage, 
     showGrid, 
     snapToGrid, 
     previewMode, 

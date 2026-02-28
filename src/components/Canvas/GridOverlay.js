@@ -3,11 +3,11 @@ import { Group, Line } from 'react-konva';
 import { useCanvas } from '../../context/CanvasContext';
 
 const GridOverlay = () => {
-  const { currentPage } = useCanvas();
+  const { currentPageData } = useCanvas();
 
-  if (!currentPage || !currentPage.grid.visible) return null;
+  if (!currentPageData || !currentPageData.grid?.visible) return null;
 
-  const { size, grid } = currentPage;
+  const { size, grid } = currentPageData;
   const { size: gridSize } = grid;
   const lines = [];
 
