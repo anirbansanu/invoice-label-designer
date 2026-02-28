@@ -2,6 +2,8 @@
 
 A powerful, production-grade React application for designing invoices, labels, receipts, badges, and custom print layouts with real-time editing capabilities.
 
+📘 Architecture redesign document: `docs/architecture-redesign.md`
+
 ## Features
 
 ### Core Features
