@@ -77,6 +77,84 @@ const saveToHistory = (state) => {
   };
 };
 
+const getElementBounds = (element) => {
+  const x = element.x || 0;
+  const y = element.y || 0;
+
+  let width = 50;
+  let height = 20;
+
+  if (typeof element.width === 'number') width = element.width;
+  if (typeof element.height === 'number') height = element.height;
+
+  if (typeof element.size === 'number') {
+    width = element.size;
+    height = element.size;
+  }
+
+  if (typeof element.radius === 'number') {
+    width = element.radius * 2;
+    height = element.radius * 2;
+  }
+
+  if (element.type === 'text') {
+    const fontSize = element.fontSize || 14;
+    const textLength = (element.text || '').length || 10;
+    if (typeof element.width !== 'number') {
+      width = Math.max(80, Math.round(textLength * fontSize * 0.55));
+    }
+    if (typeof element.height !== 'number') {
+      height = Math.max(24, Math.round(fontSize * 1.8));
+    }
+  }
+
+  return {
+    minX: x,
+    minY: y,
+    maxX: x + Math.max(1, width),
+    maxY: y + Math.max(1, height)
+  };
+};
+
+const fitTemplateElementsToPage = (elements, pageSize, padding = 12) => {
+  if (!Array.isArray(elements) || elements.length === 0) return [];
+
+  const boundsList = elements.map(getElementBounds);
+  const minX = Math.min(...boundsList.map(b => b.minX));
+  const minY = Math.min(...boundsList.map(b => b.minY));
+  const maxX = Math.max(...boundsList.map(b => b.maxX));
+  const maxY = Math.max(...boundsList.map(b => b.maxY));
+
+  const contentWidth = Math.max(1, maxX - minX);
+  const contentHeight = Math.max(1, maxY - minY);
+  const availableWidth = Math.max(1, (pageSize?.width || 794) - (padding * 2));
+  const availableHeight = Math.max(1, (pageSize?.height || 1123) - (padding * 2));
+
+  const scale = Math.min(1, availableWidth / contentWidth, availableHeight / contentHeight);
+
+  return elements.map(element => {
+    const next = JSON.parse(JSON.stringify(element));
+    next.x = Math.round((((element.x || 0) - minX) * scale) + padding);
+    next.y = Math.round((((element.y || 0) - minY) * scale) + padding);
+
+    if (typeof next.width === 'number') next.width = Math.max(1, Math.round(next.width * scale));
+    if (typeof next.height === 'number') next.height = Math.max(1, Math.round(next.height * scale));
+    if (typeof next.size === 'number') next.size = Math.max(12, Math.round(next.size * scale));
+    if (typeof next.radius === 'number') next.radius = Math.max(4, Math.round(next.radius * scale));
+    if (typeof next.fontSize === 'number') next.fontSize = Math.max(8, Math.round(next.fontSize * scale));
+    if (typeof next.strokeWidth === 'number') next.strokeWidth = Math.max(1, next.strokeWidth * scale);
+
+    if (next.type === 'table' && Array.isArray(next.columns)) {
+      next.columns = next.columns.map(col => ({
+        ...col,
+        width: typeof col.width === 'number' ? Math.max(20, Math.round(col.width * scale)) : col.width
+      }));
+    }
+
+    return next;
+  });
+};
+
 const canvasReducer = (state, action) => {
   if (!state) return initialState;
 
@@ -430,13 +508,42 @@ const canvasReducer = (state, action) => {
       return { ...state, templates: state.templates.filter(t => t.id !== action.payload) };
 
     case 'APPLY_TEMPLATE': {
-      const template = action.payload;
-      if (!template || !template.pages) return state;
+      const templatePayload = action.payload?.template || action.payload;
+      if (!templatePayload) return state;
       historyUpdate = saveToHistory(state);
+
+      if (templatePayload.pages && Array.isArray(templatePayload.pages)) {
+        return {
+          ...state, ...historyUpdate,
+          pages: JSON.parse(JSON.stringify(templatePayload.pages)),
+          currentPage: 0,
+          selectedElements: []
+        };
+      }
+
+      if (!Array.isArray(templatePayload.elements)) return state;
+
+      const targetPageSize = templatePayload.pageSize || state.pages[state.currentPage]?.size || { width: 794, height: 1123 };
+
+      const fittedElements = fitTemplateElementsToPage(templatePayload.elements, targetPageSize);
+
+      const appliedElements = fittedElements.map(element => ({
+        ...element,
+        id: generateId()
+      }));
+
       return {
         ...state, ...historyUpdate,
-        pages: JSON.parse(JSON.stringify(template.pages)),
-        currentPage: 0,
+        pages: state.pages.map((page, index) =>
+          index === state.currentPage
+            ? {
+                ...page,
+                elements: appliedElements,
+                background: templatePayload.background || page.background,
+                size: targetPageSize
+              }
+            : page
+        ),
         selectedElements: []
       };
     }

@@ -67,7 +67,7 @@ const SidebarLeft = ({ collapsed, onToggle }) => {
               }}
             />
             <IconButton
-              icon="templates"
+              icon="th-large"
               tooltip="Templates"
               variant={activeTab === 'templates' ? 'primary' : 'outline-secondary'}
               onClick={() => {

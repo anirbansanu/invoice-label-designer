@@ -131,7 +131,7 @@ const App = () => {
           {/* Main Canvas Area */}
           <main 
             id="main-content"
-            className="canvas-container flex-grow-1 position-relative"
+            className="canvas-container flex-grow-1 position-relative overflow-auto"
             role="main"
             aria-label="Design canvas workspace"
             tabIndex={0}

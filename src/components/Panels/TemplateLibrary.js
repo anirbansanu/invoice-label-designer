@@ -1,7 +1,19 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Card, Button, Form, Row, Col, Badge, Modal, InputGroup } from 'react-bootstrap';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { Card, Button, Form, Badge, Modal, InputGroup } from 'react-bootstrap';
 import { useCanvas } from '../../context/CanvasContext';
 import { templateEngine } from '../../utils/templateEngine';
+import { defaultTemplates as catalogTemplates } from '../../data/templates';
+
+const TEMPLATE_CATEGORIES = [
+  { value: 'all', label: 'All Categories' },
+  { value: 'invoice', label: 'Invoices' },
+  { value: 'label', label: 'Labels' },
+  { value: 'receipt', label: 'Receipts' },
+  { value: 'badge', label: 'Badges' },
+  { value: 'card', label: 'Business Cards' },
+  { value: 'certificate', label: 'Certificates' },
+  { value: 'custom', label: 'Custom' }
+];
 
 const TemplateLibrary = () => {
   const { templates, dispatch, pages, currentPage } = useCanvas();
@@ -10,6 +22,7 @@ const TemplateLibrary = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name');
+  const [expandedTemplateId, setExpandedTemplateId] = useState(null);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [newTemplate, setNewTemplate] = useState({
     name: '',
@@ -18,22 +31,41 @@ const TemplateLibrary = () => {
     tags: ''
   });
 
-  const categories = [
-    { value: 'all', label: 'All Categories' },
-    { value: 'invoice', label: 'Invoices' },
-    { value: 'label', label: 'Labels' },
-    { value: 'receipt', label: 'Receipts' },
-    { value: 'badge', label: 'Badges' },
-    { value: 'card', label: 'Business Cards' },
-    { value: 'certificate', label: 'Certificates' },
-    { value: 'custom', label: 'Custom' }
-  ];
+  const categoryCounts = useMemo(() => {
+    return templates.reduce((acc, template) => {
+      const key = template.category || 'custom';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+  }, [templates]);
+
+  const quickCategories = useMemo(() => {
+    return TEMPLATE_CATEGORIES.filter(category => category.value !== 'all' && categoryCounts[category.value] > 0);
+  }, [categoryCounts]);
 
   // Load default templates
   useEffect(() => {
     if (templates.length === 0) {
       templateEngine.loadDefaultTemplates().then(defaultTemplates => {
-        defaultTemplates.forEach(template => {
+        const catalogMapped = catalogTemplates.map(template => ({
+          ...template,
+          preview: template.preview || templateEngine.generatePreview({
+            elements: template.elements || [],
+            size: template.pageSize || { width: 794, height: 1123 },
+            background: template.background || '#ffffff'
+          }),
+          created: template.created || new Date().toISOString(),
+          author: template.author || 'System'
+        }));
+
+        const mergedTemplates = [...defaultTemplates];
+        catalogMapped.forEach(template => {
+          if (!mergedTemplates.some(t => t.id === template.id)) {
+            mergedTemplates.push(template);
+          }
+        });
+
+        mergedTemplates.forEach(template => {
           dispatch({ type: 'ADD_TEMPLATE', payload: template });
         });
       });
@@ -69,13 +101,10 @@ const TemplateLibrary = () => {
   const handleApplyTemplate = useCallback((template) => {
     dispatch({
       type: 'APPLY_TEMPLATE',
-      payload: {
-        pageIndex: currentPage,
-        template: template
-      }
+      payload: template
     });
     setShowTemplateModal(false);
-  }, [dispatch, currentPage]);
+  }, [dispatch]);
 
   const handleSaveAsTemplate = useCallback(() => {
     if (pages[currentPage] && pages[currentPage].elements.length > 0) {
@@ -133,6 +162,10 @@ const TemplateLibrary = () => {
     }
   }, [dispatch]);
 
+  const toggleTemplateDetails = useCallback((templateId) => {
+    setExpandedTemplateId(prev => (prev === templateId ? null : templateId));
+  }, []);
+
   return (
     <>
       <Card className="template-library">
@@ -187,7 +220,7 @@ const TemplateLibrary = () => {
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
-                {categories.map(category => (
+                {TEMPLATE_CATEGORIES.map(category => (
                   <option key={category.value} value={category.value}>
                     {category.label}
                   </option>
@@ -204,44 +237,86 @@ const TemplateLibrary = () => {
                 <option value="created">Sort by Date</option>
               </Form.Select>
             </div>
+
+            <div className="template-chip-row mt-2">
+              <Button
+                size="sm"
+                variant={categoryFilter === 'all' ? 'primary' : 'outline-secondary'}
+                className="template-chip"
+                onClick={() => setCategoryFilter('all')}
+              >
+                All ({templates.length})
+              </Button>
+              {quickCategories.map(category => (
+                <Button
+                  key={category.value}
+                  size="sm"
+                  variant={categoryFilter === category.value ? 'primary' : 'outline-secondary'}
+                  className="template-chip"
+                  onClick={() => setCategoryFilter(category.value)}
+                >
+                  {category.label} ({categoryCounts[category.value]})
+                </Button>
+              ))}
+            </div>
           </div>
           
-          {/* Template Grid */}
-          <div className="template-grid">
+          {/* Template List */}
+          <div className="template-list">
             {filteredTemplates.length === 0 ? (
               <div className="text-center text-muted p-4">
                 <i className="fas fa-file-alt fa-3x mb-2"></i>
                 <p>No templates found</p>
               </div>
             ) : (
-              <Row>
+              <div>
                 {filteredTemplates.map((template) => (
-                  <Col key={template.id} sm={6} md={4} lg={3} className="mb-3">
-                    <Card className="template-card h-100">
-                      <Card.Img
-                        variant="top"
-                        src={template.preview}
-                        style={{ height: '120px', objectFit: 'cover' }}
-                        onClick={() => handleTemplatePreview(template)}
-                      />
-                      <Card.Body className="p-2">
-                        <Card.Title className="fs-6 mb-1">{template.name}</Card.Title>
-                        <Card.Text className="small text-muted mb-2">
-                          {template.description}
-                        </Card.Text>
-                        <div className="mb-2">
-                          <Badge bg="secondary" className="me-1">
-                            {template.category}
-                          </Badge>
-                          {template.imported && (
-                            <Badge bg="info">Imported</Badge>
-                          )}
+                  <Card key={template.id} className="template-card template-list-item mb-2">
+                    <Card.Body className="p-2">
+                      <div className="d-flex gap-2 align-items-start">
+                        <img
+                          src={template.preview}
+                          alt={template.name}
+                          className="template-thumb"
+                          onClick={() => handleTemplatePreview(template)}
+                        />
+
+                        <div className="template-meta flex-grow-1">
+                          <div className="template-title">{template.name}</div>
+                          <div className="template-desc">{template.description || 'No description'}</div>
+                          <div className="mt-1">
+                            <Badge bg="secondary" className="me-1 text-capitalize">
+                              {template.category}
+                            </Badge>
+                            {template.imported && <Badge bg="info">Imported</Badge>}
+                          </div>
+                          <div className="mt-2">
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="p-0 template-details-toggle"
+                              onClick={() => toggleTemplateDetails(template.id)}
+                            >
+                              <i className={`fas ${expandedTemplateId === template.id ? 'fa-chevron-up' : 'fa-chevron-down'} me-1`}></i>
+                              {expandedTemplateId === template.id ? 'Hide details' : 'Show details'}
+                            </Button>
+                          </div>
                         </div>
-                        <div className="d-flex gap-1">
+
+                        <div className="d-flex flex-column gap-1">
                           <Button
                             variant="primary"
                             size="sm"
+                            onClick={() => handleApplyTemplate(template)}
+                            title="Apply template"
+                          >
+                            <i className="fas fa-check"></i>
+                          </Button>
+                          <Button
+                            variant="outline-secondary"
+                            size="sm"
                             onClick={() => handleTemplatePreview(template)}
+                            title="Preview"
                           >
                             <i className="fas fa-eye"></i>
                           </Button>
@@ -249,6 +324,7 @@ const TemplateLibrary = () => {
                             variant="outline-secondary"
                             size="sm"
                             onClick={() => handleExportTemplate(template)}
+                            title="Export"
                           >
                             <i className="fas fa-download"></i>
                           </Button>
@@ -256,15 +332,35 @@ const TemplateLibrary = () => {
                             variant="outline-danger"
                             size="sm"
                             onClick={() => handleDeleteTemplate(template.id)}
+                            title="Delete"
                           >
                             <i className="fas fa-trash"></i>
                           </Button>
                         </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
+                      </div>
+
+                      {expandedTemplateId === template.id && (
+                        <div className="template-inline-details mt-2 pt-2">
+                          <div className="template-inline-meta">
+                            <span><strong>Size:</strong> {template.pageSize?.width || 0} × {template.pageSize?.height || 0}</span>
+                            <span><strong>Elements:</strong> {template.elements?.length || 0}</span>
+                            <span><strong>Created:</strong> {template.created ? new Date(template.created).toLocaleDateString() : 'N/A'}</span>
+                          </div>
+                          {template.tags?.length > 0 && (
+                            <div className="template-inline-tags mt-2">
+                              {template.tags.map(tag => (
+                                <Badge key={`${template.id}-${tag}`} bg="light" text="dark" className="me-1 text-capitalize">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Card>
                 ))}
-              </Row>
+              </div>
             )}
           </div>
         </Card.Body>
@@ -361,7 +457,7 @@ const TemplateLibrary = () => {
                 value={newTemplate.category}
                 onChange={(e) => setNewTemplate(prev => ({ ...prev, category: e.target.value }))}
               >
-                {categories.filter(c => c.value !== 'all').map(category => (
+                {TEMPLATE_CATEGORIES.filter(c => c.value !== 'all').map(category => (
                   <option key={category.value} value={category.value}>
                     {category.label}
                   </option>
