@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/invoice-label-designer/static/css/main.b27b4c01.css",
-    "main.js": "/invoice-label-designer/static/js/main.584cd65e.js",
+    "main.js": "/invoice-label-designer/static/js/main.e04f72a1.js",
     "static/js/239.fd335aed.chunk.js": "/invoice-label-designer/static/js/239.fd335aed.chunk.js",
     "static/js/977.83e9f0ee.chunk.js": "/invoice-label-designer/static/js/977.83e9f0ee.chunk.js",
     "static/js/732.5c27bfe8.chunk.js": "/invoice-label-designer/static/js/732.5c27bfe8.chunk.js",
@@ -16,7 +16,7 @@
     "static/media/fa-v4compatibility.woff2": "/invoice-label-designer/static/media/fa-v4compatibility.ea8f94e1d22e0d35ccd4.woff2",
     "index.html": "/invoice-label-designer/index.html",
     "main.b27b4c01.css.map": "/invoice-label-designer/static/css/main.b27b4c01.css.map",
-    "main.584cd65e.js.map": "/invoice-label-designer/static/js/main.584cd65e.js.map",
+    "main.e04f72a1.js.map": "/invoice-label-designer/static/js/main.e04f72a1.js.map",
     "239.fd335aed.chunk.js.map": "/invoice-label-designer/static/js/239.fd335aed.chunk.js.map",
     "977.83e9f0ee.chunk.js.map": "/invoice-label-designer/static/js/977.83e9f0ee.chunk.js.map",
     "732.5c27bfe8.chunk.js.map": "/invoice-label-designer/static/js/732.5c27bfe8.chunk.js.map",
@@ -24,6 +24,6 @@
   },
   "entrypoints": [
     "static/css/main.b27b4c01.css",
-    "static/js/main.584cd65e.js"
+    "static/js/main.e04f72a1.js"
   ]
 }
