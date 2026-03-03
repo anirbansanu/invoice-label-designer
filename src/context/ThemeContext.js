@@ -18,9 +18,10 @@ export const ThemeProvider = ({ children }) => {
     }
   }, []);
 
-  // Save theme to localStorage
+  // Save theme to localStorage and sync DOM
   useEffect(() => {
     localStorage.setItem('designer-theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

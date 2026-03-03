@@ -12,7 +12,7 @@ const ImageElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
       transformerRef.current.nodes([groupRef.current]);
       transformerRef.current.getLayer().batchDraw();
     }
-  }, [isSelected]);
+  }, [isSelected, element.width, element.height, element.x, element.y, element.rotation]);
 
   useEffect(() => {
     const img = new window.Image();

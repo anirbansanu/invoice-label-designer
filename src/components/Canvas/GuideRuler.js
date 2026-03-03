@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useCanvas } from '../../context/CanvasContext';
 
 const GuideRuler = () => {
@@ -6,6 +6,46 @@ const GuideRuler = () => {
   const [horizontalGuides, setHorizontalGuides] = useState([]);
   const [verticalGuides, setVerticalGuides] = useState([]);
   const [showRulers, setShowRulers] = useState(true);
+  const [scrollOffset, setScrollOffset] = useState({ x: 0, y: 0 });
+  const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+
+  // Sync ruler position with parent scroll container and canvas wrapper offset
+  useEffect(() => {
+    const scrollParent = containerRef.current?.parentElement;
+    if (!scrollParent) return;
+
+    const syncPosition = () => {
+      setScrollOffset({ x: scrollParent.scrollLeft, y: scrollParent.scrollTop });
+
+      // Find the canvas-wrapper to get the actual canvas offset within scroll area
+      const wrapper = scrollParent.querySelector('.canvas-wrapper');
+      if (wrapper && wrapper.firstChild) {
+        // The zoom transform div is the first child of canvas-wrapper
+        const zoomDiv = wrapper.firstChild;
+        const wrapperRect = scrollParent.getBoundingClientRect();
+        const zoomRect = zoomDiv.getBoundingClientRect();
+        setCanvasOffset({
+          x: zoomRect.left - wrapperRect.left + scrollParent.scrollLeft,
+          y: zoomRect.top - wrapperRect.top + scrollParent.scrollTop
+        });
+      }
+    };
+
+    syncPosition();
+    scrollParent.addEventListener('scroll', syncPosition, { passive: true });
+    window.addEventListener('resize', syncPosition, { passive: true });
+
+    // Re-sync when zoom changes
+    const observer = new MutationObserver(syncPosition);
+    observer.observe(scrollParent, { childList: true, subtree: true, attributes: true });
+
+    return () => {
+      scrollParent.removeEventListener('scroll', syncPosition);
+      window.removeEventListener('resize', syncPosition);
+      observer.disconnect();
+    };
+  }, [zoom]);
 
   const addHorizontalGuide = useCallback((y) => {
     const newGuide = {
@@ -80,81 +120,114 @@ const GuideRuler = () => {
 
   if (!showRulers || !currentPageData) return null;
 
+  const rulerSize = 20;
+  const pageWidth = currentPageData.size.width;
+  const pageHeight = currentPageData.size.height;
+
+  // The horizontal ruler sticks to the top of the scroll viewport
+  // Its marks start at the canvas X offset and span the page width
+  const hRulerLeft = canvasOffset.x - scrollOffset.x + rulerSize;
+  const vRulerTop = canvasOffset.y - scrollOffset.y + rulerSize;
+
   return (
-    <div className="guide-ruler-container">
-      {/* Horizontal Ruler */}
+    <div className="guide-ruler-container" ref={containerRef}>
+      {/* Horizontal Ruler — sticks to top */}
       <div 
         className="ruler horizontal-ruler"
         style={{
-          position: 'absolute',
-          top: '0',
-          left: '20px',
-          width: `${currentPageData.size.width * zoom}px`,
-          height: '20px',
-          backgroundColor: '#f5f5f5',
-          borderBottom: '1px solid #ddd',
-          zIndex: 10
+          position: 'fixed',
+          top: containerRef.current?.parentElement?.getBoundingClientRect().top || 0,
+          left: (containerRef.current?.parentElement?.getBoundingClientRect().left || 0) + rulerSize,
+          width: `calc(100% - ${rulerSize}px)`,
+          height: `${rulerSize}px`,
+          backgroundColor: 'var(--bg-surface, #f5f5f5)',
+          borderBottom: '1px solid var(--border-default, #ddd)',
+          zIndex: 10,
+          overflow: 'hidden',
+          pointerEvents: 'auto'
         }}
         onClick={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
-          const x = (e.clientX - rect.left) / zoom;
-          addVerticalGuide(x);
+          const x = (e.clientX - rect.left - (hRulerLeft - rulerSize)) / zoom;
+          if (x >= 0 && x <= pageWidth) addVerticalGuide(x);
         }}
       >
-        {generateRulerMarks(currentPageData.size.width, true)}
+        <div style={{
+          position: 'absolute',
+          left: `${hRulerLeft - rulerSize}px`,
+          top: 0,
+          width: `${pageWidth * zoom}px`,
+          height: `${rulerSize}px`
+        }}>
+          {generateRulerMarks(pageWidth, true)}
+        </div>
       </div>
 
-      {/* Vertical Ruler */}
+      {/* Vertical Ruler — sticks to left */}
       <div 
         className="ruler vertical-ruler"
         style={{
-          position: 'absolute',
-          top: '20px',
-          left: '0',
-          width: '20px',
-          height: `${currentPageData.size.height * zoom}px`,
-          backgroundColor: '#f5f5f5',
-          borderRight: '1px solid #ddd',
-          zIndex: 10
+          position: 'fixed',
+          top: (containerRef.current?.parentElement?.getBoundingClientRect().top || 0) + rulerSize,
+          left: containerRef.current?.parentElement?.getBoundingClientRect().left || 0,
+          width: `${rulerSize}px`,
+          height: `calc(100% - ${rulerSize}px)`,
+          backgroundColor: 'var(--bg-surface, #f5f5f5)',
+          borderRight: '1px solid var(--border-default, #ddd)',
+          zIndex: 10,
+          overflow: 'hidden',
+          pointerEvents: 'auto'
         }}
         onClick={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
-          const y = (e.clientY - rect.top) / zoom;
-          addHorizontalGuide(y);
+          const y = (e.clientY - rect.top - (vRulerTop - rulerSize)) / zoom;
+          if (y >= 0 && y <= pageHeight) addHorizontalGuide(y);
         }}
       >
-        {generateRulerMarks(currentPageData.size.height, false)}
+        <div style={{
+          position: 'absolute',
+          top: `${vRulerTop - rulerSize}px`,
+          left: 0,
+          width: `${rulerSize}px`,
+          height: `${pageHeight * zoom}px`
+        }}>
+          {generateRulerMarks(pageHeight, false)}
+        </div>
       </div>
 
       {/* Corner */}
       <div 
         className="ruler-corner"
         style={{
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          width: '20px',
-          height: '20px',
-          backgroundColor: '#f5f5f5',
-          border: '1px solid #ddd',
+          position: 'fixed',
+          top: containerRef.current?.parentElement?.getBoundingClientRect().top || 0,
+          left: containerRef.current?.parentElement?.getBoundingClientRect().left || 0,
+          width: `${rulerSize}px`,
+          height: `${rulerSize}px`,
+          backgroundColor: 'var(--bg-surface, #f5f5f5)',
+          borderRight: '1px solid var(--border-default, #ddd)',
+          borderBottom: '1px solid var(--border-default, #ddd)',
           zIndex: 11,
-          cursor: 'pointer'
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
         onClick={() => setShowRulers(!showRulers)}
       >
-        <i className="fas fa-ruler-combined" style={{ fontSize: '10px', padding: '5px' }}></i>
+        <i className="fas fa-ruler-combined" style={{ fontSize: '8px', color: 'var(--text-muted, #666)' }}></i>
       </div>
 
-      {/* Horizontal Guides */}
+      {/* Horizontal Guides — position relative to canvas within scroll area */}
       {horizontalGuides.map(guide => (
         <div
           key={guide.id}
           className="guide-line horizontal-guide"
           style={{
             position: 'absolute',
-            top: `${guide.position * zoom + 20}px`,
-            left: '20px',
-            width: `${currentPageData.size.width * zoom}px`,
+            top: `${canvasOffset.y + (guide.position * zoom)}px`,
+            left: `${canvasOffset.x}px`,
+            width: `${pageWidth * zoom}px`,
             height: '1px',
             backgroundColor: '#0066cc',
             cursor: 'ns-resize',
@@ -164,17 +237,17 @@ const GuideRuler = () => {
         />
       ))}
 
-      {/* Vertical Guides */}
+      {/* Vertical Guides — position relative to canvas within scroll area */}
       {verticalGuides.map(guide => (
         <div
           key={guide.id}
           className="guide-line vertical-guide"
           style={{
             position: 'absolute',
-            top: '20px',
-            left: `${guide.position * zoom + 20}px`,
+            top: `${canvasOffset.y}px`,
+            left: `${canvasOffset.x + (guide.position * zoom)}px`,
             width: '1px',
-            height: `${currentPageData.size.height * zoom}px`,
+            height: `${pageHeight * zoom}px`,
             backgroundColor: '#0066cc',
             cursor: 'ew-resize',
             zIndex: 5

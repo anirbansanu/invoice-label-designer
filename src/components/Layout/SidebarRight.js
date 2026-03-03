@@ -124,8 +124,8 @@ const SidebarRight = ({ collapsed, onToggle }) => {
             
             <Tab eventKey="data" title={<><i className="fas fa-database me-1"></i> Widget </>}>
               <div className="p-3">
-                <h6>Sample Data</h6>
-                <p className="text-muted">Configure dynamic data placeholders</p>
+                <h6 className="mb-2" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>Widget Library</h6>
+                <p className="text-muted" style={{ fontSize: 'var(--text-xs)' }}>Drag or click to add elements to canvas</p>
                 {/* Data management panel would go here */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                   <div >

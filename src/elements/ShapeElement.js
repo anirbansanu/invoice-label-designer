@@ -20,7 +20,7 @@ const ShapeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pre
       transformerRef.current.nodes([shapeRef.current]);
       transformerRef.current.getLayer().batchDraw();
     }
-  }, [isSelected]);
+  }, [isSelected, element.width, element.height, element.x, element.y, element.rotation, element.radius, element.size]);
 
   const handleDragEnd = (e) => {
     const newPos = snapToGrid 

@@ -523,9 +523,24 @@ const canvasReducer = (state, action) => {
 
       if (!Array.isArray(templatePayload.elements)) return state;
 
-      const targetPageSize = templatePayload.pageSize || state.pages[state.currentPage]?.size || { width: 794, height: 1123 };
+      const currentPage = state.pages[state.currentPage];
+      const targetPageSize = templatePayload.pageSize || currentPage?.size || { width: 794, height: 1123 };
 
-      const fittedElements = fitTemplateElementsToPage(templatePayload.elements, targetPageSize);
+      // If template defines its own pageSize, use the target page size directly
+      // and scale elements from the template's design size to the target size.
+      const templateDesignSize = templatePayload.pageSize || { width: 794, height: 1123 };
+      const needsScaling = (
+        templateDesignSize.width !== targetPageSize.width ||
+        templateDesignSize.height !== targetPageSize.height
+      );
+
+      let fittedElements;
+      if (needsScaling) {
+        fittedElements = fitTemplateElementsToPage(templatePayload.elements, targetPageSize);
+      } else {
+        // Template designed for this page size — use elements as-is (deep clone only)
+        fittedElements = JSON.parse(JSON.stringify(templatePayload.elements));
+      }
 
       const appliedElements = fittedElements.map(element => ({
         ...element,

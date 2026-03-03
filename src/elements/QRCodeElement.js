@@ -15,7 +15,7 @@ const QRCodeElement = ({ element, isSelected, onSelect, onChange, snapToGrid, pr
       transformerRef.current.nodes([groupRef.current]);
       transformerRef.current.getLayer().batchDraw();
     }
-  }, [isSelected]);
+  }, [isSelected, element.size, element.x, element.y, element.rotation]);
 
   useEffect(() => {
     const qrValue = parsePlaceholders(element.value || '', sampleData) || 'SAMPLE_QR_CODE';

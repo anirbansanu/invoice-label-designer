@@ -44,7 +44,7 @@ const StatusBar = () => {
   }
 
   return (
-    <div className="status-bar bg-light border-top px-3 py-2">
+    <div className="status-bar border-top px-3 py-2">
       <div className="d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center gap-4">
           <div className="status-item">

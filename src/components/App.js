@@ -49,8 +49,10 @@ const App = () => {
   // Initialize keyboard shortcuts
   useKeyboardShortcuts();
 
-  // Apply theme classes to document body
+  // Apply theme classes to document body and html attribute
   useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    
     const classes = [
       `theme-${theme}`,
       highContrast ? 'high-contrast' : '',
@@ -62,6 +64,7 @@ const App = () => {
     // Cleanup on unmount
     return () => {
       document.body.className = '';
+      document.documentElement.removeAttribute('data-theme');
     };
   }, [theme, highContrast]);
 

@@ -227,18 +227,21 @@ const CanvasArea = () => {
   return (
     <div 
       ref={containerRef}
-      className="canvas-area bg-light overflow-hidden position-relative h-100"
-      style={{ cursor: dragStart ? 'crosshair' : 'default' }}
+      className="canvas-area position-relative h-100"
+      style={{ cursor: dragStart ? 'crosshair' : 'default', overflow: 'auto' }}
     >
       {/* Rulers */}
       <GuideRuler />
       
-      {/* Main canvas */}
+      {/* Main canvas — scrollable wrapper */}
       <div 
-        className="canvas-wrapper d-flex align-items-center justify-content-center p-4"
+        className="canvas-wrapper"
         style={{
-          minHeight: '100%',
-          minWidth: '100%'
+          minHeight: 'max-content',
+          minWidth: 'max-content',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
         <div

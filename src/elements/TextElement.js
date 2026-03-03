@@ -13,7 +13,7 @@ const TextElement = ({ element, isSelected, onSelect, onChange, snapToGrid, prev
       transformerRef.current.nodes([textRef.current]);
       transformerRef.current.getLayer().batchDraw();
     }
-  }, [isSelected]);
+  }, [isSelected, element.width, element.height, element.x, element.y, element.rotation]);
 
   const handleDragEnd = (e) => {
     const newPos = snapToGrid ? snapToGrid(e.target.x(), e.target.y()) : { x: e.target.x(), y: e.target.y() };

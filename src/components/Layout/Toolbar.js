@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navbar, Nav, ButtonGroup, Dropdown, Form } from 'react-bootstrap';
 import { useCanvas } from '../../context/CanvasContext';
+import { useTheme } from '../../context/ThemeContext';
 import IconButton from '../Common/IconButton';
 
 const Toolbar = ({ 
@@ -23,6 +24,8 @@ const Toolbar = ({
     historyIndex,
     dispatch 
   } = useCanvas();
+
+  const { theme, toggleTheme } = useTheme();
 
   const addElement = (type) => {
     const elementDefaults = {
@@ -269,15 +272,27 @@ const Toolbar = ({
         </ButtonGroup>
       </Nav>
 
-      <Nav>
+      <Nav className="align-items-center">
+        {/* Theme Toggle */}
+        <div className="theme-toggle-wrapper">
+          <i className={`fas fa-${theme === 'dark' ? 'moon' : 'sun'}`}></i>
+          <Form.Check
+            type="switch"
+            id="theme-mode"
+            label={theme === 'dark' ? 'Dark' : 'Light'}
+            checked={theme === 'dark'}
+            onChange={toggleTheme}
+          />
+        </div>
+
         {/* Preview Mode */}
         <Form.Check
           type="switch"
           id="preview-mode"
-          label="Preview Mode"
+          label="Preview"
           checked={previewMode}
           onChange={togglePreview}
-          className="me-3"
+          className="ms-3 me-3 align-self-center"
         />
 
         {/* Additional Tools */}
