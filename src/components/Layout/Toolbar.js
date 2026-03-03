@@ -3,6 +3,7 @@ import { Navbar, Nav, ButtonGroup, Dropdown, Form } from 'react-bootstrap';
 import { useCanvas } from '../../context/CanvasContext';
 import { useTheme } from '../../context/ThemeContext';
 import IconButton from '../Common/IconButton';
+import { createTableElement } from '../../utils/tableUtils';
 
 const Toolbar = ({ 
   onExport, 
@@ -60,21 +61,7 @@ const Toolbar = ({
         stroke: '#000000',
         strokeWidth: 1
       },
-      table: {
-        type: 'table',
-        x: 250,
-        y: 250,
-        width: 400,
-        height: 200,
-        columns: [
-          { header: 'Product', width: 200 },
-          { header: 'Quantity', width: 100 },
-          { header: 'Price', width: 100 }
-        ],
-        rows: [
-          ['{{product.name}}', '{{product.quantity}}', '{{product.price}}']
-        ]
-      },
+      table: createTableElement(4, 3),
       barcode: {
         type: 'barcode',
         x: 300,

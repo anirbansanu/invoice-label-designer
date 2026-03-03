@@ -4,6 +4,7 @@ import { useCanvas } from '../../context/CanvasContext';
 import ColorPicker from '../Common/ColorPicker';
 import FontPicker from '../Common/FontPicker';
 import NumberInput from '../Common/NumberInput';
+import { DEFAULT_TABLE_STYLE, TABLE_BORDER_PRESETS } from '../../utils/tableUtils';
 
 const ElementProperties = () => {
   const { selectedElementsData, updateElement, deleteElements, duplicateElements } = useCanvas();
@@ -239,6 +240,132 @@ const ElementProperties = () => {
                 max={500}
               />
             </div>
+          )}
+
+          {/* Table Properties */}
+          {element.type === 'table' && (
+            <>
+              <div className="property-group mb-4">
+                <h6 className="property-group-title">Table Header</h6>
+                <ColorPicker
+                  label="Header Background"
+                  value={element.tableStyle?.headerBg || DEFAULT_TABLE_STYLE.headerBg}
+                  onChange={(value) => handlePropertyChange('tableStyle', { ...(element.tableStyle || {}), headerBg: value })}
+                />
+                <ColorPicker
+                  label="Header Text Color"
+                  value={element.tableStyle?.headerColor || DEFAULT_TABLE_STYLE.headerColor}
+                  onChange={(value) => handlePropertyChange('tableStyle', { ...(element.tableStyle || {}), headerColor: value })}
+                />
+                <NumberInput
+                  label="Header Font Size"
+                  value={element.tableStyle?.headerFontSize || DEFAULT_TABLE_STYLE.headerFontSize}
+                  onChange={(value) => handlePropertyChange('tableStyle', { ...(element.tableStyle || {}), headerFontSize: value })}
+                  unit="px"
+                  min={8}
+                  max={36}
+                />
+                <Form.Check
+                  type="switch"
+                  label="Show Header Row"
+                  checked={(element.tableStyle?.showHeader) !== false}
+                  onChange={(e) => handlePropertyChange('tableStyle', { ...(element.tableStyle || {}), showHeader: e.target.checked })}
+                />
+              </div>
+
+              <div className="property-group mb-4">
+                <h6 className="property-group-title">Cell Defaults</h6>
+                <NumberInput
+                  label="Cell Font Size"
+                  value={element.tableStyle?.cellFontSize || DEFAULT_TABLE_STYLE.cellFontSize}
+                  onChange={(value) => handlePropertyChange('tableStyle', { ...(element.tableStyle || {}), cellFontSize: value })}
+                  unit="px"
+                  min={8}
+                  max={36}
+                />
+                <ColorPicker
+                  label="Cell Text Color"
+                  value={element.tableStyle?.cellColor || DEFAULT_TABLE_STYLE.cellColor}
+                  onChange={(value) => handlePropertyChange('tableStyle', { ...(element.tableStyle || {}), cellColor: value })}
+                />
+                <NumberInput
+                  label="Cell Padding"
+                  value={element.tableStyle?.cellPadding || DEFAULT_TABLE_STYLE.cellPadding}
+                  onChange={(value) => handlePropertyChange('tableStyle', { ...(element.tableStyle || {}), cellPadding: value })}
+                  unit="px"
+                  min={0}
+                  max={20}
+                />
+                <NumberInput
+                  label="Min Row Height"
+                  value={element.tableStyle?.minRowHeight || DEFAULT_TABLE_STYLE.minRowHeight}
+                  onChange={(value) => handlePropertyChange('tableStyle', { ...(element.tableStyle || {}), minRowHeight: value })}
+                  unit="px"
+                  min={16}
+                  max={80}
+                />
+                <Form.Check
+                  type="switch"
+                  label="Alternate Row Shading"
+                  checked={element.tableStyle?.alternateRowEnabled !== false}
+                  onChange={(e) => handlePropertyChange('tableStyle', { ...(element.tableStyle || {}), alternateRowEnabled: e.target.checked })}
+                />
+                {(element.tableStyle?.alternateRowEnabled !== false) && (
+                  <ColorPicker
+                    label="Alternate Row Color"
+                    value={element.tableStyle?.alternateRowBg || DEFAULT_TABLE_STYLE.alternateRowBg}
+                    onChange={(value) => handlePropertyChange('tableStyle', { ...(element.tableStyle || {}), alternateRowBg: value })}
+                  />
+                )}
+              </div>
+
+              <div className="property-group mb-4">
+                <h6 className="property-group-title">Borders</h6>
+                <div className="d-flex gap-1 flex-wrap mb-2">
+                  {Object.keys(TABLE_BORDER_PRESETS).map(key => (
+                    <Button key={key} variant="outline-secondary" size="sm"
+                      onClick={() => handlePropertyChange('tableStyle', {
+                        ...(element.tableStyle || {}),
+                        ...TABLE_BORDER_PRESETS[key],
+                      })}>
+                      {key.charAt(0).toUpperCase() + key.slice(1)}
+                    </Button>
+                  ))}
+                </div>
+                <ColorPicker
+                  label="Border Color"
+                  value={element.tableStyle?.cellBorderColor || DEFAULT_TABLE_STYLE.cellBorderColor}
+                  onChange={(value) => handlePropertyChange('tableStyle', {
+                    ...(element.tableStyle || {}),
+                    cellBorderColor: value,
+                    outerBorderColor: value,
+                  })}
+                />
+                <NumberInput
+                  label="Border Width"
+                  value={element.tableStyle?.cellBorderWidth ?? DEFAULT_TABLE_STYLE.cellBorderWidth}
+                  onChange={(value) => handlePropertyChange('tableStyle', { ...(element.tableStyle || {}), cellBorderWidth: value })}
+                  unit="px"
+                  min={0}
+                  max={5}
+                />
+              </div>
+
+              <div className="property-group mb-4">
+                <h6 className="property-group-title">Layout</h6>
+                <Form.Group className="mb-2">
+                  <Form.Label>Width Mode</Form.Label>
+                  <Form.Select
+                    value={element.tableStyle?.widthMode || 'fixed'}
+                    onChange={(e) => handlePropertyChange('tableStyle', { ...(element.tableStyle || {}), widthMode: e.target.value })}
+                  >
+                    <option value="fixed">Fixed</option>
+                    <option value="full">Full Width</option>
+                    <option value="auto">Auto</option>
+                  </Form.Select>
+                </Form.Group>
+              </div>
+            </>
           )}
 
           {/* Transform Properties */}
