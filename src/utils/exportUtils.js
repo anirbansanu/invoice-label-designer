@@ -1,5 +1,4 @@
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import JSZip from 'jszip';
 
 class ExportUtils {
@@ -240,6 +239,8 @@ class ExportUtils {
         await this.renderQRCodeElement(ctx, element);
         break;
       // Add more element types as needed
+      default:
+        break;
     }
     
     ctx.restore();

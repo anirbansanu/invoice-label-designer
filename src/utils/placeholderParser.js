@@ -80,6 +80,8 @@ export const replacePlaceholderInElement = (element, data) => {
         );
       }
       break;
+    default:
+      break;
   }
   
   return processedElement;
@@ -113,6 +115,8 @@ export const getAllPlaceholdersInElement = (element) => {
           placeholders.push(...getAllPlaceholdersInElement(child))
         );
       }
+      break;
+    default:
       break;
   }
   

@@ -1,5 +1,85 @@
 import { useState, useCallback } from 'react';
 
+const generateThumbnail = (canvas) => {
+  const thumbCanvas = document.createElement('canvas');
+  const thumbCtx = thumbCanvas.getContext('2d');
+  
+  thumbCanvas.width = 150;
+  thumbCanvas.height = 150;
+  
+  // Calculate crop dimensions for square thumbnail
+  const size = Math.min(canvas.width, canvas.height);
+  const x = (canvas.width - size) / 2;
+  const y = (canvas.height - size) / 2;
+  
+  thumbCtx.drawImage(canvas, x, y, size, size, 0, 0, 150, 150);
+  
+  return thumbCanvas.toDataURL();
+};
+
+const processImageFile = (file, options) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Calculate dimensions
+        let { width, height } = img;
+        const maxWidth = options.maxWidth || 2000;
+        const maxHeight = options.maxHeight || 2000;
+        
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width *= ratio;
+          height *= ratio;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Apply filters
+        if (options.filters) {
+          ctx.filter = `brightness(${options.filters.brightness}%) contrast(${options.filters.contrast}%) saturate(${options.filters.saturation}%)`;
+        }
+        
+        // Draw image
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convert to blob
+        canvas.toBlob((blob) => {
+          const imageData = {
+            id: `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            name: file.name,
+            src: canvas.toDataURL(),
+            width,
+            height,
+            originalWidth: img.width,
+            originalHeight: img.height,
+            size: blob.size,
+            type: file.type,
+            filters: options.filters,
+            thumbnail: generateThumbnail(canvas),
+            created: new Date().toISOString()
+          };
+          
+          resolve(imageData);
+        }, file.type, options.quality || 0.8);
+      };
+      
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 export const useImageUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
@@ -39,86 +119,6 @@ export const useImageUpload = () => {
     }
   }, []);
 
-  const processImageFile = useCallback((file, options) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        const img = new Image();
-        
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          // Calculate dimensions
-          let { width, height } = img;
-          const maxWidth = options.maxWidth || 2000;
-          const maxHeight = options.maxHeight || 2000;
-          
-          if (width > maxWidth || height > maxHeight) {
-            const ratio = Math.min(maxWidth / width, maxHeight / height);
-            width *= ratio;
-            height *= ratio;
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          
-          // Apply filters
-          if (options.filters) {
-            ctx.filter = `brightness(${options.filters.brightness}%) contrast(${options.filters.contrast}%) saturate(${options.filters.saturation}%)`;
-          }
-          
-          // Draw image
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          // Convert to blob
-          canvas.toBlob((blob) => {
-            const imageData = {
-              id: `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-              name: file.name,
-              src: canvas.toDataURL(),
-              width,
-              height,
-              originalWidth: img.width,
-              originalHeight: img.height,
-              size: blob.size,
-              type: file.type,
-              filters: options.filters,
-              thumbnail: generateThumbnail(canvas),
-              created: new Date().toISOString()
-            };
-            
-            resolve(imageData);
-          }, file.type, options.quality || 0.8);
-        };
-        
-        img.onerror = reject;
-        img.src = e.target.result;
-      };
-      
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }, []);
-
-  const generateThumbnail = useCallback((canvas) => {
-    const thumbCanvas = document.createElement('canvas');
-    const thumbCtx = thumbCanvas.getContext('2d');
-    
-    thumbCanvas.width = 150;
-    thumbCanvas.height = 150;
-    
-    // Calculate crop dimensions for square thumbnail
-    const size = Math.min(canvas.width, canvas.height);
-    const x = (canvas.width - size) / 2;
-    const y = (canvas.height - size) / 2;
-    
-    thumbCtx.drawImage(canvas, x, y, size, size, 0, 0, 150, 150);
-    
-    return thumbCanvas.toDataURL();
-  }, []);
-
   const resizeImage = useCallback((imageData, newWidth, newHeight) => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -145,7 +145,7 @@ export const useImageUpload = () => {
       
       img.src = imageData.src;
     });
-  }, [generateThumbnail]);
+  }, []);
 
   const cropImage = useCallback((imageData, cropArea) => {
     return new Promise((resolve) => {
@@ -183,7 +183,7 @@ export const useImageUpload = () => {
       
       img.src = imageData.src;
     });
-  }, [generateThumbnail]);
+  }, []);
 
   return {
     uploadImage,

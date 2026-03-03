@@ -72,6 +72,7 @@ const FontPicker = ({ value, onChange, label, disabled = false }) => {
     };
 
     loadFonts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const isFontAvailable = (font) => {

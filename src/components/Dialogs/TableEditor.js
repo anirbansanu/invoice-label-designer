@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Modal, Button, Form, Table, InputGroup } from 'react-bootstrap';
+import { Modal, Button, Form, Table } from 'react-bootstrap';
 import { useCanvas } from '../../context/CanvasContext';
 
 const TableEditor = ({ show, onHide }) => {
@@ -63,11 +63,6 @@ const TableEditor = ({ show, onHide }) => {
       ...prev,
       rows: prev.rows.filter((_, i) => i !== index)
     }));
-  }, []);
-
-  const mergeCells = useCallback((fromRow, fromCol, toRow, toCol) => {
-    // Implementation for cell merging
-    console.log('Merge cells:', { fromRow, fromCol, toRow, toCol });
   }, []);
 
   const handleSave = useCallback(() => {

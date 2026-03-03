@@ -4,6 +4,18 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 import { useCanvas } from '../../context/CanvasContext';
 
+const pageSizes = {
+  'A4': { width: 794, height: 1123 },
+  'A3': { width: 1123, height: 1587 },
+  'A5': { width: 559, height: 794 },
+  'Letter': { width: 816, height: 1056 },
+  'Legal': { width: 816, height: 1344 },
+  'Tabloid': { width: 1056, height: 1632 },
+  'Label_4x6': { width: 288, height: 432 },
+  'Label_4x4': { width: 288, height: 288 },
+  'Custom': { width: 800, height: 600 }
+};
+
 const PageManager = () => {
   const { 
     pages, 
@@ -22,18 +34,6 @@ const PageManager = () => {
     background: '#ffffff',
     copyFrom: null
   });
-
-  const pageSizes = {
-    'A4': { width: 794, height: 1123 },
-    'A3': { width: 1123, height: 1587 },
-    'A5': { width: 559, height: 794 },
-    'Letter': { width: 816, height: 1056 },
-    'Legal': { width: 816, height: 1344 },
-    'Tabloid': { width: 1056, height: 1632 },
-    'Label_4x6': { width: 288, height: 432 },
-    'Label_4x4': { width: 288, height: 288 },
-    'Custom': { width: 800, height: 600 }
-  };
 
   const handleAddPage = useCallback(() => {
     const size = pageSizes[newPageSettings.size];

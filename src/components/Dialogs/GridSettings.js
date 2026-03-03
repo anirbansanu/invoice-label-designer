@@ -193,7 +193,7 @@ const GridSettings = ({ show, onHide }) => {
 };
 
 const generateGridPattern = (settings) => {
-  const { size, color, style } = settings;
+  const { color, style } = settings;
   
   switch (style) {
     case 'dot':

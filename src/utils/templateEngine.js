@@ -1,4 +1,5 @@
-import { sampleInvoiceData, sampleLabelData } from '../data/sampleData';
+// sampleData imports available if needed for template preview
+// import { sampleInvoiceData, sampleLabelData } from '../data/sampleData';
 
 class TemplateEngine {
   constructor() {

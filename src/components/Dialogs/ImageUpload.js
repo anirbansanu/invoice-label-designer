@@ -8,7 +8,6 @@ const ImageUpload = ({ show, onHide }) => {
   const { uploadImage, uploadProgress } = useImageUpload();
   const fileInputRef = useRef();
   
-  const [selectedImages, setSelectedImages] = useState([]);
   const [uploadMode, setUploadMode] = useState('single'); // 'single' or 'multiple'
   const [cropSettings, setCropSettings] = useState({ enabled: false, aspectRatio: null });
   const [filterSettings, setFilterSettings] = useState({ brightness: 100, contrast: 100, saturation: 100 });
@@ -85,13 +84,6 @@ const ImageUpload = ({ show, onHide }) => {
         id: `${image.id}_copy_${Date.now()}`,
         name: `${image.name} (Copy)`
       }
-    });
-  }, [dispatch]);
-
-  const applyImageEffects = useCallback((imageId, effects) => {
-    dispatch({
-      type: 'UPDATE_IMAGE',
-      payload: { id: imageId, effects }
     });
   }, [dispatch]);
 
